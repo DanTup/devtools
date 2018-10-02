@@ -5,7 +5,9 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
+import 'package:devtools/memory/object_graph.dart';
 import 'package:vm_service_lib/vm_service_lib.dart';
 
 import '../charts/charts.dart';
@@ -59,7 +61,14 @@ class MemoryScreen extends Screen {
                 ..small()
                 ..primary()
                 ..disabled = true
-                ..click(_loadAllocationProfile),
+                ..click(() {
+                  loadSnapshotButton.disabled = true;
+                  Future.wait([
+                    // TODO(dantup): Do these things need to be consistent? :/
+                    _loadAllocationProfile(),
+                    _loadHeapSnapshot()
+                  ]).whenComplete(() => loadSnapshotButton.disabled = false);
+                }),
               progressElement = new ProgressElement()
                 ..clazz('margin-left')
                 ..display = 'none',
@@ -109,90 +118,100 @@ class MemoryScreen extends Screen {
 
   String get _isolateId => serviceInfo.isolateManager.selectedIsolate.id;
 
-  Future<Null> _loadAllocationProfile() async {
-    loadSnapshotButton.disabled = true;
+  Future<void> _loadAllocationProfile() async {
     tableStack.first.element.display = null;
     final Spinner spinner =
         tableStack.first.element.add(new Spinner()..clazz('padded'));
 
     // TODO(devoncarew): error handling
 
-    try {
-      // 'reset': true to reset the object allocation accumulators
-      final Response response = await serviceInfo.service
-          .callMethod('_getAllocationProfile', isolateId: _isolateId);
-      final List<dynamic> members = response.json['members'];
-      final List<ClassHeapStats> heapStats = members
-          .cast<Map<String, dynamic>>()
-          .map((Map<String, dynamic> d) => new ClassHeapStats(d))
-          .where((ClassHeapStats stats) {
-        return stats.instancesCurrent > 0; //|| stats.instancesAccumulated > 0;
-      }).toList();
+    // 'reset': true to reset the object allocation accumulators
+    final Response response = await serviceInfo.service
+        .callMethod('_getAllocationProfile', isolateId: _isolateId);
+    final List<dynamic> members = response.json['members'];
+    final List<ClassHeapStats> heapStats = members
+        .cast<Map<String, dynamic>>()
+        .map((Map<String, dynamic> d) => new ClassHeapStats(d))
+        .where((ClassHeapStats stats) {
+      return stats.instancesCurrent > 0; //|| stats.instancesAccumulated > 0;
+    }).toList();
 
-      tableStack.first.setRows(heapStats);
-      _updateStatus(heapStats);
-      spinner.element.remove();
-    } finally {
-      loadSnapshotButton.disabled = false;
-    }
+    tableStack.first.setRows(heapStats);
+    _updateStatus(heapStats);
+    spinner.element.remove();
   }
 
-//  void _loadHeapSnapshot() {
-//    List<Event> events = [];
-//    Completer<List<Event>> graphEventsCompleter = new Completer();
-//    StreamSubscription sub;
-//
-//    int received = 0;
-//    sub = serviceInfo.service.onGraphEvent.listen((Event e) {
-//      int index = e.json['chunkIndex'];
-//      int count = e.json['chunkCount'];
-//
-//      print('received $index of $count');
-//
-//      if (events.length != count) {
-//        events.length = count;
-//        progressElement.max = count;
-//      }
-//
-//      received++;
-//
-//      progressElement.value = received;
-//
-//      events[index] = e;
-//
-//      if (!events.any((e) => e == null)) {
-//        sub.cancel();
-//        graphEventsCompleter.complete(events);
-//      }
-//    });
-//
-//    loadSnapshotButton.disabled = true;
-//    progressElement.value = 0;
-//    progressElement.display = 'initial';
-//
-//    // TODO(devoncarew): snapshot info comes in as multiple binary _Graph events
-//    serviceInfo.service
-//        .requestHeapSnapshot(_isolateId, 'VM', true)
-//        .catchError((e) {
-//      framework.showError('Error retrieving heap snapshot', e);
-//    });
-//
-//    graphEventsCompleter.future.then((List<Event> events) {
-//      print('received ${events.length} heap snapshot events.');
-//      toast('Snapshot download complete.');
-//
-//      // type, kind, isolate, timestamp, chunkIndex, chunkCount, nodeCount, _data
-//      for (Event e in events) {
-//        int nodeCount = e.json['nodeCount'];
-//        ByteData data = e.json['_data'];
-//        print('  $nodeCount nodes, ${data.lengthInBytes ~/ 1024}k data');
-//      }
-//    }).whenComplete(() {
-//      print('done');
-//      loadSnapshotButton.disabled = false;
-//      progressElement.display = 'none';
-//    });
-//  }
+  Future<void> _loadHeapSnapshot() async {
+    final List<Event> events = <Event>[];
+    final Completer<List<Event>> graphEventsCompleter =
+        new Completer<List<Event>>();
+    StreamSubscription<Event> sub;
+
+    int received = 0;
+    sub = serviceInfo.service.onGraphEvent.listen((Event e) {
+      final int index = e.json['chunkIndex'];
+      final int count = e.json['chunkCount'];
+
+      print('received $index of $count');
+
+      if (events.length != count) {
+        events.length = count;
+        progressElement.max = count;
+      }
+
+      received++;
+
+      progressElement.value = received;
+
+      events[index] = e;
+
+      if (!events.any((Event e) => e == null)) {
+        sub.cancel();
+        graphEventsCompleter.complete(events);
+      }
+    });
+
+    loadSnapshotButton.disabled = true;
+    progressElement.value = 0;
+    progressElement.display = 'initial';
+
+    // TODO(devoncarew): snapshot info comes in as multiple binary _Graph events
+    serviceInfo.service
+        .requestHeapSnapshot(_isolateId, 'VM', true)
+        .catchError((Object e) {
+      framework.showError('Error retrieving heap snapshot', e);
+    });
+
+    try {
+      final List<Event> events = await graphEventsCompleter.future;
+      print('received ${events.length} heap snapshot events.');
+      toast('Snapshot download complete.');
+
+      // type, kind, isolate, timestamp, chunkIndex, chunkCount, nodeCount, _data
+      for (Event e in events) {
+        final int nodeCount = e.json['nodeCount'];
+        final ByteData data = e.json['_data'];
+        print('  $nodeCount nodes, ${data.lengthInBytes ~/ 1024}k data');
+      }
+
+      final List<ByteData> data =
+          events.map<ByteData>((Event e) => e.json['_data']).toList();
+      final int nodeCount = events.first.json['nodeCount'];
+      final ObjectGraph graph = new ObjectGraph(data, nodeCount);
+      await graph.process().forEach((List<Object> progress) {
+        final String label = progress[0];
+        final double percent = progress[1];
+        print('$label $percent%');
+      });
+      final MergedObjectVertex root = graph.mergedRoot;
+      for (MergedObjectVertex x in root.dominatorTreeChildren()) {
+        print('${x.vmCid}, ${x.instanceCount}, ${x.retainedSize}');
+      }
+    } finally {
+      print('done');
+      progressElement.display = 'none';
+    }
+  }
 
   CoreElement createLiveChartArea() {
     final CoreElement container = div(c: 'section perf-chart table-border')
@@ -511,7 +530,7 @@ class MemoryTracker {
     }));
     _update(vm, isolates);
 
-    _pollingTimer = new Timer(kUpdateDelay, _pollMemory);
+    //_pollingTimer = new Timer(kUpdateDelay, _pollMemory);
   }
 
   // TODO(devoncarew): add a way to pause polling
