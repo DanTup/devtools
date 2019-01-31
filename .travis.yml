@@ -2,20 +2,20 @@ os:
   - linux
   - osx
 
-language: dart
-dart:
-  - "dev/raw/latest"
-# Disable testing on stable; it creates many more bots, and we generally only need
-# test coverage for the SDK version we're developing and distributing against.
-#  - stable
 addons:
   chrome: stable
 
 env:
-  - BOT=main
-  - BOT=test_ddc
-  - BOT=test_dart2js
-  - BOT=flutter_sdk_tests
+  - DART_CHANNEL=dev/raw BOT=main
+  - DART_CHANNEL=dev/raw BOT=test_ddc
+  - DART_CHANNEL=dev/raw BOT=test_dart2js
+  - DART_CHANNEL=dev/raw BOT=flutter_sdk_tests
+  # Disable testing on stable; it creates many more bots, and we generally only need
+  # test coverage for the SDK version we're developing and distributing against.
+  # - DART_CHANNEL=stable/release BOT=main
+  # - DART_CHANNEL=stable/release BOT=test_ddc
+  # - DART_CHANNEL=stable/release BOT=test_dart2js
+  # - DART_CHANNEL=stable/release BOT=flutter_sdk_tests
 
 script: ./tool/travis.sh
 
