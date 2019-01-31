@@ -292,7 +292,7 @@ class WebdevFixture {
     }
 
     final Process process = await Process.start(
-      'pub',
+      Platform.isWindows ? 'pub.bat' : 'pub',
       cliArgs,
       environment: environment,
     );

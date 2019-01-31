@@ -1,9 +1,15 @@
+# Neither Dart nor the default language (Ruby) are supported on Windows, so this
+# is picked arbitrarily from the list of supported languages:
+# https://docs.travis-ci.com/user/reference/windows/#supported-languages
+language: shell
+
 os:
 # TODO(dantup): Tests fail on Linux
 # 00:58+0 -1: test/integration_test.dart: integration (setUpAll)[E]
 # SocketException: OS Error: Connection refused, errno = 111, address = localhost, port = 45924
 # - linux
   - osx
+  - windows
 
 addons:
   chrome: stable

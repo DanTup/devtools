@@ -5,14 +5,16 @@
 # found in the LICENSE file.
 
 # Fast fail the script on failures.
-set -e
+set -ex
 
 # Download dart
 echo Downloading Dart...
 if [[ $TRAVIS_OS_NAME == "osx" ]]; then
     export DART_OS=macos;
-else
+elif [[ $TRAVIS_OS_NAME == "linux" ]]; then
     export DART_OS=linux;
+else
+    export DART_OS=windows;
 fi
 curl https://storage.googleapis.com/dart-archive/channels/$DART_CHANNEL/latest/sdk/dartsdk-$DART_OS-x64-release.zip > dart-sdk.zip
 unzip dart-sdk.zip > /dev/null
@@ -21,14 +23,29 @@ export PATH=$PATH:`pwd`/dart-sdk/bin
 pushd packages/devtools
 echo `pwd`
 
-# Print out the Dart version in use.
+# In GitBash on Windows, we have to call pub.bat so we alias `pub` in this script to call the
+# correct one based on the OS.
+function pub {
+	if [[ $TRAVIS_OS_NAME == "windows" ]]; then
+        command pub.bat "$@"
+    else
+        command pub "$@"
+    fi
+}
+function flutter {
+	if [[ $TRAVIS_OS_NAME == "windows" ]]; then
+        command flutter.bat "$@"
+    else
+        command flutter "$@"
+    fi
+}
+
+# Print out the versions and ensure we can call both Dart and Pub.
 dart --version
+pub --version
 
 # Add globally activated packages to the path.
 export PATH=$PATH:~/.pub-cache/bin
-
-# We should be using dart from /Users/travis/dart-sdk/bin/dart.
-echo "which dart: " `which dart`
 
 # Provision our packages.
 pub get
