@@ -23,6 +23,7 @@ script: ./tool/travis.sh
 branches:
   only:
     - master
+    - enable-other-bots
 
 cache:
   directories:
