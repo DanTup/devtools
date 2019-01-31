@@ -5,17 +5,19 @@ os:
 # - linux
   - osx
 
-language: dart
-dart:
-  - "dev/raw/latest"
 addons:
   chrome: stable
 
 env:
-  - BOT=main
-  - BOT=test_ddc
-  - BOT=test_dart2js
-  - BOT=flutter_sdk_tests
+  global:
+    - BOT=main
+    - BOT=test_ddc
+    - BOT=test_dart2js
+    - BOT=flutter_sdk_tests
+  matrix:
+    - DART_CHANNEL=stable/release
+    - DART_CHANNEL=dev/raw
+
 script: ./tool/travis.sh
 
 branches:

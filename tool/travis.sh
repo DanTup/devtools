@@ -7,6 +7,17 @@
 # Fast fail the script on failures.
 set -e
 
+# Download dart
+echo Downloading Dart...
+if [[ $TRAVIS_OS_NAME == "osx" ]]; then
+    export DART_OS=macos;
+else
+    export DART_OS=linux;
+fi
+curl https://storage.googleapis.com/dart-archive/channels/$DART_CHANNEL/latest/sdk/dartsdk-$DART_OS-x64-release.zip > dart-sdk.zip
+unzip dart-sdk.zip > /dev/null
+export PATH=$PATH:`pwd`/dart-sdk/bin
+
 pushd packages/devtools
 echo `pwd`
 
