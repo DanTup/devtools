@@ -60,6 +60,7 @@ class Chrome {
   final String executable;
 
   Future<ChromeProcess> start({String url, int debugPort = 9222}) {
+    print('DEBUGPORT1: $debugPort');
     final List<String> args = <String>[
       '--no-default-browser-check',
       '--no-first-run',
@@ -70,13 +71,16 @@ class Chrome {
       args.add(url);
     }
     return Process.start(executable, args).then((Process process) {
+      print('PORT = $debugPort');
       return ChromeProcess(process, debugPort);
     });
   }
 }
 
 class ChromeProcess {
-  ChromeProcess(this.process, this.debugPort);
+  ChromeProcess(this.process, this.debugPort) {
+    print('DEBUGPORT2: $debugPort');
+  }
 
   final Process process;
   final int debugPort;
@@ -86,6 +90,7 @@ class ChromeProcess {
     String url, {
     Duration timeout = const Duration(seconds: 20),
   }) async {
+    print('DEBUGPORT3: $debugPort');
     final ChromeConnection connection =
         ChromeConnection(Uri.parse(url).host, debugPort);
 
