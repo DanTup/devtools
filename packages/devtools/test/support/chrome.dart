@@ -126,6 +126,7 @@ class ChromeProcess {
   Future<ChromeTab> getFirstTab({
     Duration timeout = const Duration(seconds: 20),
   }) async {
+    print('DEBUGPORT333: $debugPort');
     final ChromeConnection connection =
         ChromeConnection('localhost', debugPort);
 
