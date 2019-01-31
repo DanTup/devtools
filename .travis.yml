@@ -4,7 +4,6 @@ os:
 # SocketException: OS Error: Connection refused, errno = 111, address = localhost, port = 45924
   - linux
   - osx
-  - windows
 
 language: dart
 dart:
