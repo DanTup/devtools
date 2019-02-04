@@ -75,7 +75,7 @@ abstract class FlutterTestDriver {
     _debugPrint('Spawning flutter $args in ${_projectFolder.path}');
 
     _proc = await Process.start(
-        Platform.isWindows ? 'flutter.bat' : 'flutter', args.toList(),
+        Platform.isWindows ? 'flutter.bat' : 'flutter', args,
         workingDirectory: _projectFolder.path,
         environment: <String, String>{
           'FLUTTER_TEST': 'true',
