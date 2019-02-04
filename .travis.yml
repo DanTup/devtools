@@ -15,14 +15,13 @@ addons:
   chrome: stable
 
 env:
-  global:
+  matrix:
+#    - DART_CHANNEL=stable/release
+    - DART_CHANNEL=dev/raw
     - BOT=main
     - BOT=test_ddc
     - BOT=test_dart2js
     - BOT=flutter_sdk_tests
-  matrix:
-#    - DART_CHANNEL=stable/release
-    - DART_CHANNEL=dev/raw
 
 script: ./tool/travis.sh
 
