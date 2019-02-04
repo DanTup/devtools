@@ -21,7 +21,7 @@ env:
     - BOT=test_dart2js
     - BOT=flutter_sdk_tests
   matrix:
-    - DART_CHANNEL=stable/release
+#    - DART_CHANNEL=stable/release
     - DART_CHANNEL=dev/raw
 
 script: ./tool/travis.sh
