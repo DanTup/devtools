@@ -196,8 +196,8 @@ class InspectorService {
     return ObjectGroup(debugName, this);
   }
 
-  void dispose() {
-    inspectorLibrary.dispose();
+  Future<void> dispose() async {
+    await inspectorLibrary.dispose();
   }
 
   Future<Object> forceRefresh() {

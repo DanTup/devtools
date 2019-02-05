@@ -43,8 +43,8 @@ class EvalOnDartLibrary {
 
   bool _disposed = false;
 
-  void dispose() {
-    selectedIsolateStreamSubscription.cancel();
+  Future<void> dispose() async {
+    await selectedIsolateStreamSubscription.cancel();
     _disposed = true;
   }
 

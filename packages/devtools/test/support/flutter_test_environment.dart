@@ -79,19 +79,25 @@ class FlutterTestEnvironment {
   }
 
   Future<void> tearDownEnvironment({bool force = false}) async {
+    await new Future.delayed(const Duration(seconds: 10));
     if (_needsSetup) {
+      print('Skipping teardown because not needed');
       // _needsSetup=true means we've never run setup code or already cleaned up
       return;
     }
     if (!force && reuseTestEnvironment) {
+      print('Skipping teardown for other reasons');
       // Skip actually tearing down for better test performance.
       return;
     }
+    print('Tearing down!');
     if (_beforeTearDown != null) await _beforeTearDown();
 
     await _service.allFuturesCompleted.future;
     await _flutter.stop();
+    await new Future.delayed(const Duration(seconds: 1));
     _flutter = null;
+    print('Done tearing down!');
 
     _needsSetup = true;
   }
