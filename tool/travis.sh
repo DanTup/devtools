@@ -19,26 +19,19 @@ fi
 curl https://storage.googleapis.com/dart-archive/channels/$DART_CHANNEL/latest/sdk/dartsdk-$DART_OS-x64-release.zip > dart-sdk.zip
 unzip dart-sdk.zip > /dev/null
 echo Adding Dart and Pub/bin to PATH...
-echo 1
-export PATH=$PATH:`pwd`/dart-sdk/bin
-echo 2
+export PATH=$PATH:`pwd`/dart-sdk/bin2
 if [[ $TRAVIS_OS_NAME == "windows" ]]; then
-    echo 3
     export PATH=$PATH:$APPDATA/Roaming/Pub/Cache/bin
 else
-    echo 4
     export PATH=$PATH:~/.pub-cache/bin
 fi
-echo 5
 
 if [[ $TRAVIS_OS_NAME == "windows" ]]; then
-    echo 6
-    echo Installing Google Chrome (Stable)...
+    echo Installing Google Chrome Stable...
     # Install Chrome via Chocolatey while `addons: chrome` doesn't seem to work on Windows
     # https://travis-ci.community/t/installing-google-chrome-stable-but-i-cant-find-it-anywhere/2118
     choco install googlechrome --acceptlicense --yes --no-progress
 fi
-echo 7
 
 pushd packages/devtools
 echo `pwd`
