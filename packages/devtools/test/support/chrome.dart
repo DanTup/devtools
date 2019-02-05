@@ -37,7 +37,7 @@ class Chrome {
         return Chrome.from(defaultPath);
       }
     } else if (Platform.isWindows) {
-      final String progFiles = Platform.environment['%PROGRAMFILES(X86)%'];
+      final String progFiles = Platform.environment['PROGRAMFILES(X86)'];
       final String chromeInstall = '$progFiles\\Google\\Chrome';
       final String defaultPath = '$chromeInstall\\Application\\chrome.exe';
 
