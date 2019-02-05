@@ -5,7 +5,7 @@
 # found in the LICENSE file.
 
 # Fast fail the script on failures.
-set -ex
+set -e
 
 # Download dart
 echo Downloading Dart...
