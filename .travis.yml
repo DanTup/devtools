@@ -33,4 +33,5 @@ branches:
 
 cache:
   directories:
-  - $HOME/.pub-cache
+  - $HOME/.pub-cache # macOS / Linux
+  - $APPDATA/Roaming/Pub/Cache # Windows
