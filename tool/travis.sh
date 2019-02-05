@@ -45,6 +45,13 @@ function pub {
         command pub "$@"
     fi
 }
+function dartfmt {
+	if [[ $TRAVIS_OS_NAME == "windows" ]]; then
+        command dartfmt.bat "$@"
+    else
+        command dartfmt "$@"
+    fi
+}
 function flutter {
 	if [[ $TRAVIS_OS_NAME == "windows" ]]; then
         command flutter.bat "$@"
@@ -72,7 +79,7 @@ if [ "$BOT" = "main" ]; then
     fi
 
     # Analyze the source.
-    pub global activate tuneup && tuneup check
+    pub global activate tuneup && pub global run tuneup check
 
     # Ensure we can build the app.
     pub run webdev build
