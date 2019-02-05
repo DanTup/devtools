@@ -18,7 +18,13 @@ else
 fi
 curl https://storage.googleapis.com/dart-archive/channels/$DART_CHANNEL/latest/sdk/dartsdk-$DART_OS-x64-release.zip > dart-sdk.zip
 unzip dart-sdk.zip > /dev/null
+echo Adding to PATH
 export PATH=$PATH:`pwd`/dart-sdk/bin
+if [[ $TRAVIS_OS_NAME == "windows" ]]; then
+    export PATH=$PATH:$APPDATA/Roaming/Pub/Cache/bin
+else
+    export PATH=$PATH:$HOME/.pub-cache/bin
+fi
 
 pushd packages/devtools
 echo `pwd`
