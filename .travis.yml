@@ -17,8 +17,8 @@ addons:
 env:
   matrix:
     - DART_CHANNEL=stable/release  BOT=main
-    - DART_CHANNEL=stable/release  BOT=test_ddc
-    - DART_CHANNEL=stable/release  BOT=test_dart2js
+#   - DART_CHANNEL=stable/release  BOT=test_ddc
+#   - DART_CHANNEL=stable/release  BOT=test_dart2js
     - DART_CHANNEL=stable/release  BOT=flutter_sdk_tests
     - DART_CHANNEL=dev/raw         BOT=main
     - DART_CHANNEL=dev/raw         BOT=test_ddc
