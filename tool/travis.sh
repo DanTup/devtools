@@ -11,24 +11,58 @@ set -e
 echo Downloading Dart...
 if [[ $TRAVIS_OS_NAME == "osx" ]]; then
     export DART_OS=macos;
-else
+elif [[ $TRAVIS_OS_NAME == "linux" ]]; then
     export DART_OS=linux;
+else
+    export DART_OS=windows;
 fi
 curl https://storage.googleapis.com/dart-archive/channels/$DART_CHANNEL/latest/sdk/dartsdk-$DART_OS-x64-release.zip > dart-sdk.zip
 unzip dart-sdk.zip > /dev/null
+echo Adding Dart and Pub/bin to PATH...
 export PATH=$PATH:`pwd`/dart-sdk/bin
+if [[ $TRAVIS_OS_NAME == "windows" ]]; then
+    export PATH=$PATH:$APPDATA/Roaming/Pub/Cache/bin
+else
+    export PATH=$PATH:~/.pub-cache/bin
+fi
+
+if [[ $TRAVIS_OS_NAME == "windows" ]]; then
+    echo Installing Google Chrome Stable...
+    # Install Chrome via Chocolatey while `addons: chrome` doesn't seem to work on Windows
+    # https://travis-ci.community/t/installing-google-chrome-stable-but-i-cant-find-it-anywhere/2118
+    choco install googlechrome --acceptlicense --yes --no-progress
+fi
 
 pushd packages/devtools
 echo `pwd`
 
-# Print out the Dart version in use.
+# In GitBash on Windows, we have to call pub.bat so we alias `pub` in this script to call the
+# correct one based on the OS.
+function pub {
+	if [[ $TRAVIS_OS_NAME == "windows" ]]; then
+        command pub.bat "$@"
+    else
+        command pub "$@"
+    fi
+}
+function dartfmt {
+	if [[ $TRAVIS_OS_NAME == "windows" ]]; then
+        command dartfmt.bat "$@"
+    else
+        command dartfmt "$@"
+    fi
+}
+function flutter {
+	if [[ $TRAVIS_OS_NAME == "windows" ]]; then
+        command flutter.bat "$@"
+    else
+        command flutter "$@"
+    fi
+}
+
+# Print out the versions and ensure we can call both Dart and Pub.
 dart --version
-
-# Add globally activated packages to the path.
-export PATH=$PATH:~/.pub-cache/bin
-
-# We should be using dart from /Users/travis/dart-sdk/bin/dart.
-echo "which dart: " `which dart`
+pub --version
 
 # Provision our packages.
 pub get
@@ -49,20 +83,20 @@ if [ "$BOT" = "main" ]; then
     dart tool/version_check.dart
 
     # Analyze the source.
-    pub global activate tuneup && tuneup check
+    pub global activate tuneup && pub global run tuneup check
 
     # Ensure we can build the app.
     pub run build_runner build -o web:build --release
 
 elif [ "$BOT" = "test_ddc" ]; then
 
-    pub run test --reporter expanded --exclude-tags useFlutterSdk
-    pub run test --reporter expanded --exclude-tags useFlutterSdk --platform chrome-no-sandbox
+    pub run test -j1 --reporter expanded --exclude-tags useFlutterSdk
+    pub run test -j1 --reporter expanded --exclude-tags useFlutterSdk --platform chrome-no-sandbox
 
 elif [ "$BOT" = "test_dart2js" ]; then
 
-    WEBDEV_RELEASE=true pub run test --reporter expanded --exclude-tags useFlutterSdk
-    WEBDEV_RELEASE=true pub run test --reporter expanded --exclude-tags useFlutterSdk --platform chrome-no-sandbox
+    WEBDEV_RELEASE=true pub run test -j1 --reporter expanded --exclude-tags useFlutterSdk
+    WEBDEV_RELEASE=true pub run test -j1 --reporter expanded --exclude-tags useFlutterSdk --platform chrome-no-sandbox
 
 elif [ "$BOT" = "flutter_sdk_tests" ]; then
 
