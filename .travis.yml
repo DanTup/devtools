@@ -1,9 +1,24 @@
+# This isn't too important, but we don't use Dart because we download it ourselves now.
+# With `shell` the Chrome addon wont' install on Linux.
+# node_js works for macOS + Linux but hangs on Windows, so that's overridden below.
+language: c
+
 os:
   - linux
   - osx
+  - windows
+
+dist: trusty
 
 addons:
   chrome: stable
+
+matrix:
+  allow_failures:
+    - os: windows
+      env: DART_CHANNEL=dev/raw BOT=test_ddc
+    - os: windows
+      env: DART_CHANNEL=dev/raw BOT=test_dart2js
 
 env:
   - DART_CHANNEL=dev/raw BOT=main
@@ -25,4 +40,5 @@ branches:
 
 cache:
   directories:
-  - $HOME/.pub-cache
+  - $HOME/.pub-cache # macOS / Linux
+  - $APPDATA/Roaming/Pub/Cache # Windows
