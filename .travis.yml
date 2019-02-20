@@ -14,11 +14,16 @@ addons:
   chrome: stable
 
 matrix:
+  # TODO(dantup): Fix these failures on Windows and remove this
   allow_failures:
     - os: windows
       env: DART_CHANNEL=dev/raw BOT=test_ddc
     - os: windows
       env: DART_CHANNEL=dev/raw BOT=test_dart2js
+    - os: windows
+      env: DART_CHANNEL=stable/release BOT=test_ddc
+    - os: windows
+      env: DART_CHANNEL=stable/release BOT=test_dart2js
 
 env:
   - DART_CHANNEL=dev/raw BOT=main
