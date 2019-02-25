@@ -544,9 +544,12 @@ void main() async {
     });
 
     test('hotReload', () async {
+      print('HR #1');
       await env.setupEnvironment();
+      print('HR #2');
 
       await serviceManager.performHotReload();
+      print('HR #3');
       // Ensure the inspector does not fall over and die after a hot reload.
       expect(
           tree.toStringDeep(),
@@ -564,6 +567,7 @@ void main() async {
       // TODO(jacobr): would be nice to have some tests that trigger a hot
       // reload that actually changes app state in a meaningful way.
 
+      print('HR #4');
       await env.tearDownEnvironment();
     });
 // TODO(jacobr): uncomment out the hotRestart tests once
