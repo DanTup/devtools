@@ -4,8 +4,8 @@
 language: c
 
 os:
-  - linux
-  - osx
+  # - linux
+  # - osx
   - windows
 
 dist: trusty
@@ -27,8 +27,8 @@ matrix:
 
 env:
   - DART_CHANNEL=dev/raw BOT=main
-  - DART_CHANNEL=dev/raw BOT=test_ddc
-  - DART_CHANNEL=dev/raw BOT=test_dart2js
+  # - DART_CHANNEL=dev/raw BOT=test_ddc
+  # - DART_CHANNEL=dev/raw BOT=test_dart2js
   - DART_CHANNEL=dev/raw BOT=flutter_sdk_tests
   # Disable testing on stable; it creates many more bots, and we generally only need
   # test coverage for the SDK version we're developing and distributing against.
