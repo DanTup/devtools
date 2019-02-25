@@ -20,24 +20,34 @@ import 'support/flutter_test_environment.dart';
 bool reuseTestEnvironment = true;
 
 void main() async {
+  print('### 1');
   Catalog.setCatalog(
       Catalog.decode(await File('web/widgets.json').readAsString()));
+  print('### 2');
   InspectorService inspectorService;
+  print('### 3');
 
   final FlutterTestEnvironment env = FlutterTestEnvironment(
     const FlutterRunConfiguration(withDebugger: true),
   );
+  print('### 4');
 
   env.afterNewSetup = () async {
+    print('... 1');
     await ensureInspectorServiceDependencies();
+    print('... 2');
     inspectorService = await InspectorService.create(env.service);
+    print('... 3');
     if (env.runConfig.trackWidgetCreation) {
+      print('... 4');
       await inspectorService.inferPubRootDirectoryIfNeeded();
     }
   };
 
   env.beforeTearDown = () {
+    print('<<< 1');
     inspectorService.dispose();
+    print('<<< 2');
     inspectorService = null;
   };
 
@@ -198,17 +208,21 @@ void main() async {
       });
 
       test('render tree', () async {
+        print('TEST 1');
         await env.setupEnvironment(
           config: const FlutterRunConfiguration(
             withDebugger: true,
             trackWidgetCreation: false,
           ),
         );
+        print('TEST 2');
 
         final group = inspectorService.createObjectGroup('test-group');
+        print('TEST 3');
         final RemoteDiagnosticsNode root =
             await group.getRoot(FlutterTreeType.renderObject);
         // Tree only contains widgets from local app.
+        print('TEST 4');
         expect(
           treeToDebugString(root),
           equalsIgnoringHashCodes(

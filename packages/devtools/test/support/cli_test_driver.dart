@@ -7,6 +7,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:devtools/src/vm_service_wrapper.dart';
+import 'package:pedantic/pedantic.dart';
 import 'package:vm_service_lib/vm_service_lib.dart';
 import 'package:vm_service_lib/vm_service_lib_io.dart';
 
@@ -78,6 +79,8 @@ class CliAppFixture extends AppFixture {
       Platform.resolvedExecutable,
       <String>['--observe=0', '--pause-isolates-on-start', appScriptPath],
     );
+    unawaited(
+        process.exitCode.then((code) => print('App exited with code $code')));
 
     final Stream<String> lines =
         process.stdout.transform(utf8.decoder).transform(const LineSplitter());

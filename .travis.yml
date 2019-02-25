@@ -42,6 +42,7 @@ script: ./tool/travis.sh
 branches:
   only:
     - master
+    - windows-testing
 
 cache:
   directories:

@@ -84,7 +84,7 @@ abstract class FlutterTestDriver {
     // This class doesn't use the result of the future. It's made available
     // via a getter for external uses.
     unawaited(_proc.exitCode.then((int code) {
-      _debugPrint('Process exited ($code)');
+      _debugPrint('Flutter process exited ($code)');
       _hasExited = true;
     }));
     _transformToLines(_proc.stdout).listen((String line) => _stdout.add(line));

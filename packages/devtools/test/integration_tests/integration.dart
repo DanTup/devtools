@@ -7,6 +7,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:pedantic/pedantic.dart';
 import 'package:test/test.dart';
 import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart'
     show ConsoleAPIEvent, RemoteObject;
@@ -14,7 +15,7 @@ import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart'
 import '../support/chrome.dart';
 import '../support/cli_test_driver.dart';
 
-const bool verboseTesting = false;
+const bool verboseTesting = true;
 
 WebdevFixture webdevFixture;
 BrowserManager browserManager;
@@ -125,7 +126,7 @@ class BrowserManager {
 class BrowserTabInstance {
   BrowserTabInstance(this.tab) {
     tab.onConsoleAPICalled
-        .where((ConsoleAPIEvent event) => event.type == 'log')
+        //.where((ConsoleAPIEvent event) => event.type == 'log')
         .listen((ConsoleAPIEvent event) {
       if (event.args.isNotEmpty) {
         final RemoteObject message = event.args.first;
@@ -183,24 +184,45 @@ class BrowserTabInstance {
   Stream<AppEvent> get onEvent => _eventStream.stream;
 
   Future<AppResponse> send(String method, [dynamic params]) async {
+    print('Send #1');
     _remote ??= await _getAppChannelObject();
+    print('Send #2');
 
     final int id = _nextId++;
 
     final Completer<AppResponse> completer = Completer<AppResponse>();
+    print('Send #3');
     _completers[id] = completer;
+    print('Send #3.5');
 
     try {
-      await tab.wipConnection.runtime.callFunctionOn(
-        "function (method, id, params) { return window['devtools'].send(method, id, params); }",
-        objectId: _remote.objectId,
-        arguments: <dynamic>[method, id, params],
-      );
+      print('Send #4');
+      print(DateTime.now());
+      try {
+        print("Calling window['devtools'].send");
+        await tab.wipConnection.runtime.callFunctionOn(
+          "window['devtools'].send",
+          objectId: _remote.objectId,
+          arguments: <dynamic>[method, id, params],
+        );
+        print("Finished calling window['devtools'].send");
+        print(DateTime.now());
+      } catch (e) {
+        print("Calling window['devtools'].send errored");
+        print(DateTime.now());
+        print(e);
+      }
+      print(DateTime.now());
+      print('Send #5');
 
       return completer.future;
     } catch (e, st) {
+      print(e);
+      print('Send #6 (ERR)');
       _completers.remove(id);
+      print('Send #7');
       completer.completeError(e, st);
+      print('Send #8');
       rethrow;
     }
   }
@@ -220,19 +242,29 @@ class BrowserTabInstance {
       print(message);
     }
 
+    print('Handling #0');
     if (message.containsKey('id')) {
+      print('Handling #1');
       // handle a response: {id: 1}
       final AppResponse response = AppResponse(message);
+      print('Handling #2');
       final Completer<AppResponse> completer = _completers.remove(response.id);
+      print('Handling #3');
       if (response.hasError) {
+        print('Handling #4');
         completer.completeError(response.error);
       } else {
+        print('Handling #5');
         completer.complete(response);
       }
+      print('Handling #6');
     } else {
+      print('Handling #7');
       // handle an event: {event: app.echo, params: foo}
       _eventStream.add(AppEvent(message));
+      print('Handling #8');
     }
+    print('Handling #9');
   }
 }
 
@@ -309,6 +341,8 @@ class WebdevFixture {
       cliArgs,
       environment: environment,
     );
+    unawaited(
+        process.exitCode.then((code) => print('Pub exited with code $code')));
 
     final Stream<String> lines =
         process.stdout.transform(utf8.decoder).transform(const LineSplitter());
