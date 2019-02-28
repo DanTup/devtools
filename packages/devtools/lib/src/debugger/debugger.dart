@@ -469,6 +469,7 @@ class DebuggerScreen extends Screen {
 
   void _handleIsolateChanged(IsolateRef isolateRef) {
     if (isolateRef == null) {
+      print('isol changed');
       scriptsView.clearScripts();
 
       debuggerState.switchToIsolate(isolateRef);
@@ -486,6 +487,7 @@ class DebuggerScreen extends Screen {
       if (result is Isolate) {
         _populateFromIsolate(result);
       } else {
+        print('err?!');
         scriptsView.clearScripts();
       }
     }).catchError((dynamic e) {
@@ -496,6 +498,7 @@ class DebuggerScreen extends Screen {
   void _handleConnectionStop(dynamic event) {
     deviceStatus.element.text = '';
 
+    print('connection stropped');
     scriptsView.clearScripts();
 
     debuggerState.switchToIsolate(null);
@@ -518,6 +521,7 @@ class DebuggerScreen extends Screen {
 
       debuggerState.scripts = scripts;
 
+      print('showing ${scripts.length} scripts');
       scriptsView.showScripts(
         scripts,
         debuggerState.rootLib.uri,
@@ -1155,7 +1159,10 @@ class ScriptsView implements CoreElementView {
     }
   }
 
-  void clearScripts() => _items.clearItems();
+  void clearScripts() {
+    print('clearing scripts!');
+    _items.clearItems();
+  }
 }
 
 class CallStackView implements CoreElementView {

@@ -170,6 +170,7 @@ class App {
 
   Future<List<String>> debuggerGetScripts([dynamic _]) async {
     final DebuggerScreen screen = framework.getScreen('debugger');
+    print('enumerating scripts view');
     return screen.scriptsView.items.map((ScriptRef script) {
       return script.uri;
     }).toList();

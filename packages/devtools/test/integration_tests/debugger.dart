@@ -38,6 +38,8 @@ void debuggingTests() {
     if (!(await debuggingManager.supportsScripts())) {
       print('=== VM does not support getScripts, skipping test ===');
       return;
+    } else {
+      print('===     VM does supports getScripts =)    ===');
     }
 
     // Get the list of scripts.
