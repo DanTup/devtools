@@ -25,11 +25,15 @@ void main() {
     );
 
     tearDownAll(() async {
+      print('TD1');
       await env.tearDownEnvironment(force: true);
+      print('TD2');
     });
 
     test('vmServiceOpened', () async {
+      print('T1');
       await env.setupEnvironment();
+      print('T2');
 
       expect(serviceManager.service, equals(env.service));
       expect(serviceManager.isolateManager, isNotNull);
@@ -141,7 +145,9 @@ void main() {
     });
 
     test('toggle numeric service extension', () async {
+      print('TG1');
       await env.setupEnvironment();
+      print('TG2');
 
       final extensionName = extensions.slowAnimations.extension;
       const evalExpression = 'timeDilation';
@@ -150,8 +156,11 @@ void main() {
         env.service,
       );
 
+      print('TG3');
       await _verifyExtensionStateOnTestDevice(evalExpression, '1.0', library);
+      print('TG4');
       await _verifyInitialExtensionStateInServiceManager(extensionName);
+      print('TG5');
 
       // Enable the service extension via ServiceExtensionManager.
       await serviceManager.serviceExtensionManager.setServiceExtensionState(
@@ -159,41 +168,56 @@ void main() {
         true,
         5.0,
       );
+      print('TG6');
 
       await _verifyExtensionStateOnTestDevice(evalExpression, '5.0', library);
+      print('TG7');
       await _verifyExtensionStateInServiceManager(extensionName, true, 5.0);
+      print('TG8');
 
       await env.tearDownEnvironment();
+      print('TG9');
     });
 
     test('callService', () async {
+      print('CS1');
       await env.setupEnvironment();
+      print('CS2');
 
       final registeredService = serviceManager
               .registeredMethodsForService[registrations.hotReload.service] ??
           const [];
+      print('CS3');
       expect(registeredService, isNotEmpty);
+      print('CS4');
 
       await serviceManager.callService(
         registrations.hotReload.service,
         isolateId: serviceManager.isolateManager.selectedIsolate.id,
       );
+      print('CS5');
 
       await env.tearDownEnvironment();
+      print('CS6');
     });
 
     test('callService throws exception', () async {
+      print('CSE1');
       await env.setupEnvironment();
+      print('CSE2');
 
       // Service with less than 1 registration.
       expect(serviceManager.callService('fakeMethod'), throwsException);
+      print('CSE3');
 
       // Service with more than 1 registration.
       serviceManager.registeredMethodsForService.putIfAbsent('fakeMethod',
           () => ['registration1.fakeMethod', 'registration2.fakeMethod']);
       expect(serviceManager.callService('fakeMethod'), throwsException);
+      print('CSE4');
 
       await env.tearDownEnvironment();
+      print('CSE5');
     });
 
     test('callMulticastService', () async {
