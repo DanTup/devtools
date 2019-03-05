@@ -40,6 +40,14 @@ class Chrome {
       if (FileSystemEntity.isFileSync(defaultPath)) {
         return Chrome.from(defaultPath);
       }
+    } else if (Platform.isWindows) {
+      final String progFiles = Platform.environment['PROGRAMFILES(X86)'];
+      final String chromeInstall = '$progFiles\\Google\\Chrome';
+      final String defaultPath = '$chromeInstall\\Application\\chrome.exe';
+
+      if (FileSystemEntity.isFileSync(defaultPath)) {
+        return Chrome.from(defaultPath);
+      }
     }
 
     // TODO(devoncarew): check default install locations for linux
@@ -63,7 +71,7 @@ class Chrome {
 
   final String executable;
 
-  Future<ChromeProcess> start({String url, int debugPort = 9222}) {
+  Future<ChromeProcess> start({String url, int debugPort = 9222}) async {
     final List<String> args = <String>[
       '--no-default-browser-check',
       '--no-first-run',
@@ -80,9 +88,10 @@ class Chrome {
     if (url != null) {
       args.add(url);
     }
-    return Process.start(executable, args).then((Process process) {
-      return ChromeProcess(process, debugPort);
-    });
+    final process = await Process.start(executable, args);
+    unawaited(process.exitCode
+        .then((code) => print('Chrome exited with code $code')));
+    return ChromeProcess(process, debugPort);
   }
 }
 
@@ -104,7 +113,8 @@ class ChromeProcess {
       return tab.url == url;
     }, retryFor: timeout);
 
-    unawaited(process.exitCode.then((_) {
+    unawaited(process.exitCode.then((code) {
+      print('Process exited with $code');
       _processAlive = false;
     }));
 
@@ -178,6 +188,7 @@ class ChromeTab {
 
     await _wip.log.enable();
     _wip.log.onEntryAdded.listen((LogEntry entry) {
+      print(entry);
       if (_lostConnectionTime == null ||
           entry.timestamp > _lostConnectionTime) {
         _entryAddedController.add(entry);
@@ -186,11 +197,22 @@ class ChromeTab {
 
     await _wip.runtime.enable();
     _wip.runtime.onConsoleAPICalled.listen((ConsoleAPIEvent event) {
+      print(event);
       if (_lostConnectionTime == null ||
           event.timestamp > _lostConnectionTime) {
         _consoleAPICalledController.add(event);
       }
     });
+
+    await _wip.debugger.enable();
+    _wip.debugger.onPaused.listen((_) {
+      print('PAUSED?!');
+    });
+
+    _wip.onClose.listen((_) {
+      print('closed!!!!');
+    });
+    await _wip.debugger.setPauseOnExceptions(PauseState.none);
 
     unawaited(
         _exceptionThrownController.addStream(_wip.runtime.onExceptionThrown));
@@ -214,11 +236,15 @@ class ChromeTab {
       });
 
       onExceptionThrown.listen((ex) {
-        throw 'JavaScript exception occurred: ${ex.method}\n\n'
+        // TODO(dantup): Should we throw here, to fail tests? Currently we'd get
+        // failures like:
+        // Library package:flutter/src/widgets/widget_inspector.dart not found
+        // but this may need to be fixed for non-Flutter usage of DevTools anyway.
+        print('JavaScript exception occurred: ${ex.method}\n\n'
             '${ex.params}\n\n'
             '${ex.exceptionDetails?.text}\n\n'
             '${ex.exceptionDetails?.exception}\n\n'
-            '${ex.exceptionDetails?.stackTrace}';
+            '${ex.exceptionDetails?.stackTrace}');
       });
     }
 
