@@ -19,6 +19,7 @@ script: ./tool/travis.sh
 branches:
   only:
     - master
+    - test-inspector-service-flake
 
 cache:
   directories:
