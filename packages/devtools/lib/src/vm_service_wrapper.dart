@@ -59,6 +59,7 @@ class VmServiceWrapper implements VmService {
 
   @override
   Future<Response> callMethod(String method, {String isolateId, Map args}) {
+    print('Calling method $method in vm_service_wrapper');
     return _trackFuture(
         _vmService.callMethod(method, isolateId: isolateId, args: args));
   }

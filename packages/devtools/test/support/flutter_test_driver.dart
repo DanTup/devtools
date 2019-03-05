@@ -18,7 +18,7 @@ import 'package:vm_service_lib/vm_service_lib_io.dart';
 /// (flutter_tools/).
 
 // Set this to true for debugging to get JSON written to stdout.
-const bool _printDebugOutputToStdOut = false;
+const bool _printDebugOutputToStdOut = true;
 const Duration defaultTimeout = Duration(seconds: 40);
 const Duration appStartTimeout = Duration(seconds: 120);
 const Duration quitTimeout = Duration(seconds: 10);
@@ -322,8 +322,9 @@ class FlutterRunTestDriver extends FlutterTestDriver {
           await _waitFor(event: 'app.debugPort', timeout: appStartTimeout);
       final String wsUriString = debugPort['params']['wsUri'];
       _vmServiceWsUri = Uri.parse(wsUriString);
-      vmService = VmServiceWrapper(
-          await vmServiceConnectUri(_vmServiceWsUri.toString()));
+      vmService = VmServiceWrapper(await vmServiceConnectUri(
+          _vmServiceWsUri.toString(),
+          log: new PrintLog()));
       vmService.onSend.listen((String s) => _debugPrint('==> $s'));
       vmService.onReceive.listen((String s) => _debugPrint('<== $s'));
       await Future.wait(<Future<Success>>[
@@ -481,4 +482,16 @@ class FlutterRunConfiguration {
   final bool withDebugger;
   final bool pauseOnExceptions;
   final bool trackWidgetCreation;
+}
+
+class PrintLog implements Log {
+  @override
+  void warning(String message) {
+    print(message);
+  }
+
+  @override
+  void severe(String message) {
+    print(message);
+  }
 }
