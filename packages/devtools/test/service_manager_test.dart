@@ -46,6 +46,8 @@ void main() {
       }
 
       await env.tearDownEnvironment();
+
+      await endTest('vm service opened');
     });
 
     test('invalid setBreakpoint throws exception', () async {
@@ -82,6 +84,8 @@ void main() {
       // This case catches a regression where a setting a breakpoint at an
       // invalid line would throw an uncaught exception.
       expect(testError, isNull);
+
+      await endTest('invalid bp');
     });
 
     test('toggle boolean service extension', () async {
@@ -108,6 +112,8 @@ void main() {
       await _verifyExtensionStateInServiceManager(extensionName, true, true);
 
       await env.tearDownEnvironment();
+
+      await endTest('toggle bool');
     });
 
     test('toggle String service extension', () async {
@@ -142,6 +148,7 @@ void main() {
       await _verifyExtensionStateInServiceManager(extensionName, true, 'iOS');
 
       await env.tearDownEnvironment();
+      await endTest('toggle string');
     });
 
     test('toggle numeric service extension', () async {
@@ -177,6 +184,7 @@ void main() {
 
       await env.tearDownEnvironment();
       print('TG9');
+      await endTest('toggle numeric');
     });
 
     test('callService', () async {
@@ -199,6 +207,7 @@ void main() {
 
       await env.tearDownEnvironment();
       print('CS6');
+      await endTest('callService');
     });
 
     test('callService throws exception', () async {
@@ -218,6 +227,7 @@ void main() {
 
       await env.tearDownEnvironment();
       print('CSE5');
+      await endTest('callServive exception');
     });
 
     test('callMulticastService', () async {
@@ -234,6 +244,8 @@ void main() {
       );
 
       await env.tearDownEnvironment();
+
+      await endTest('call multicast');
     });
 
     test('callMulticastService throws exception', () async {
@@ -242,6 +254,8 @@ void main() {
       expect(serviceManager.callService('fakeMethod'), throwsException);
 
       await env.tearDownEnvironment();
+
+      await endTest('call multicast exception');
     });
 
     test('hotReload', () async {
@@ -250,6 +264,8 @@ void main() {
       await serviceManager.performHotReload();
 
       await env.tearDownEnvironment();
+
+      await endTest('hot reload');
     });
 
     // TODO(jacobr): uncomment out the hotRestart tests once
@@ -292,7 +308,7 @@ void main() {
       await env.tearDownEnvironment();
     });
     */
-  }, tags: 'useFlutterSdk', timeout: const Timeout.factor(4));
+  }, tags: 'useFlutterSdk', timeout: const Timeout.factor(8));
 
   group('serviceManagerTests - restoring device-enabled extension:', () {
     FlutterRunTestDriver _flutter;
@@ -429,7 +445,7 @@ void main() {
         numericExtensionDescription.enabledValue,
       );
     });
-  }, tags: 'useFlutterSdk', timeout: const Timeout.factor(8));
+  }, tags: 'useFlutterSdk', timeout: const Timeout.factor(8), skip: true);
 }
 
 Future<void> _verifyExtensionStateOnTestDevice(String evalExpression,
@@ -462,4 +478,10 @@ Future<void> _verifyExtensionStateInServiceManager(
   final ServiceExtensionState state = await stateCompleter.future;
   expect(state.enabled, equals(enabled));
   expect(state.value, equals(value));
+}
+
+Future<void> endTest(String name) async {
+  print('Test $name has ended... Waiting 30 seconds...');
+  await Future.delayed(Duration(seconds: 20));
+  print('Done! ($name)');
 }
