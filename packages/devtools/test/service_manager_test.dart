@@ -57,14 +57,15 @@ void main() {
         'fakeMethod',
         () => ['registration1.fakeMethod', 'registration2.fakeMethod'],
       );
-      expect(serviceManager.callService('fakeMethod'), throwsException);
+      await expectLater(
+          serviceManager.callService('fakeMethod'), throwsException);
 
       final Completer<Object> testDone = Completer();
       Object testError;
       runZoned(() {
         Future<void> asyncTestMethod() async {
           // Service with less than 1 registration.
-          expect(
+          await expectLater(
               serviceManager.service.addBreakpoint(
                   serviceManager.isolateManager.selectedIsolate.id,
                   'fake-script-id',
@@ -216,13 +217,15 @@ void main() {
       print('CSE2');
 
       // Service with less than 1 registration.
-      expect(serviceManager.callService('fakeMethod'), throwsException);
+      await expectLater(
+          serviceManager.callService('fakeMethod'), throwsException);
       print('CSE3');
 
       // Service with more than 1 registration.
       serviceManager.registeredMethodsForService.putIfAbsent('fakeMethod',
           () => ['registration1.fakeMethod', 'registration2.fakeMethod']);
-      expect(serviceManager.callService('fakeMethod'), throwsException);
+      await expectLater(
+          serviceManager.callService('fakeMethod'), throwsException);
       print('CSE4');
 
       await env.tearDownEnvironment();
@@ -251,7 +254,8 @@ void main() {
     test('callMulticastService throws exception', () async {
       await env.setupEnvironment();
 
-      expect(serviceManager.callService('fakeMethod'), throwsException);
+      await expectLater(
+          serviceManager.callService('fakeMethod'), throwsException);
 
       await env.tearDownEnvironment();
 
