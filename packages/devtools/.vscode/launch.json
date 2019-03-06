@@ -17,5 +17,10 @@
 			"webRoot": "${workspaceFolder}/build",
 			"preLaunchTask": "Build + Serve Release Build",
 		},
+		{
+			"name": "Dart",
+			"type": "dart",
+			"request": "launch",
+		},
 	],
 }
