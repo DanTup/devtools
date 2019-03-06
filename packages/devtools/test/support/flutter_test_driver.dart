@@ -95,7 +95,8 @@ abstract class FlutterTestDriver {
 
     // This is just debug printing to aid running/debugging tests locally.
     _stdout.stream.listen(_debugPrint);
-    _stderr.stream.listen(_debugPrint);
+    _stderr.stream.listen((s) => _debugPrint(
+        '     ====== ERROR =======\n     $s\n     ===== /ERROR ======'));
   }
 
   Future<int> _killGracefully() async {
