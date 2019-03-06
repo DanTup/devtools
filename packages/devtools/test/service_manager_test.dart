@@ -18,6 +18,8 @@ import 'package:vm_service_lib/vm_service_lib.dart';
 import 'support/flutter_test_driver.dart';
 import 'support/flutter_test_environment.dart';
 
+const jsonRpcInvalidParamsCode = -32602;
+
 void main() {
   group('serviceManagerTests', () {
     final FlutterTestEnvironment env = FlutterTestEnvironment(
@@ -52,39 +54,17 @@ void main() {
 
     test('invalid setBreakpoint throws exception', () async {
       await env.setupEnvironment();
-      // Service with more than 1 registration.
-      serviceManager.registeredMethodsForService.putIfAbsent(
-        'fakeMethod',
-        () => ['registration1.fakeMethod', 'registration2.fakeMethod'],
-      );
+
       await expectLater(
-          serviceManager.callService('fakeMethod'), throwsException);
+        serviceManager.service.addBreakpoint(
+            serviceManager.isolateManager.selectedIsolate.id,
+            'fake-script-id',
+            1),
+        throwsA(const TypeMatcher<RPCError>()
+            .having((e) => e.code, 'code', equals(jsonRpcInvalidParamsCode))),
+      );
 
-      final Completer<Object> testDone = Completer();
-      Object testError;
-      runZoned(() {
-        Future<void> asyncTestMethod() async {
-          // Service with less than 1 registration.
-          await expectLater(
-              serviceManager.service.addBreakpoint(
-                  serviceManager.isolateManager.selectedIsolate.id,
-                  'fake-script-id',
-                  1),
-              throwsException);
-
-          await env.tearDownEnvironment();
-        }
-
-        testDone.complete(asyncTestMethod());
-      }, onError: ([error]) {
-        testError = error;
-      });
-      await testDone.future;
-      // Verify that no uncaught exceptions were thrown in an async manner
-      // while running the test.
-      // This case catches a regression where a setting a breakpoint at an
-      // invalid line would throw an uncaught exception.
-      expect(testError, isNull);
+      await env.tearDownEnvironment();
 
       await endTest('invalid bp');
     });
