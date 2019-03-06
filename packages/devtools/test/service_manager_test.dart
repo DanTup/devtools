@@ -42,12 +42,17 @@ void main() {
       expect(serviceManager.serviceExtensionManager, isNotNull);
       expect(serviceManager.isolateManager.isolates, isNotEmpty);
 
+      print('T3');
       if (serviceManager.isolateManager.selectedIsolate == null) {
+        print('T4');
         await serviceManager.isolateManager.onSelectedIsolateChanged
             .firstWhere((ref) => ref != null);
+        print('T5');
       }
 
+      print('T6');
       await env.tearDownEnvironment();
+      print('T7');
 
       await endTest('vm service opened');
     });
