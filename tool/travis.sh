@@ -57,9 +57,9 @@ elif [ "$BOT" = "flutter_sdk_tests" ]; then
 
     # Get Flutter.
     echo Setting up Flutter
+    cd ..
     time (
-        git clone https://github.com/flutter/flutter.git ../flutter
-        cd ..
+        git clone https://github.com/flutter/flutter.git flutter
         export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
         flutter config --no-analytics
         flutter doctor
