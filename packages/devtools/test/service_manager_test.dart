@@ -223,15 +223,12 @@ void main() {
       await env.tearDownEnvironment();
     });
 
-    // TODO(jacobr): uncomment out the hotRestart tests once
-    // https://github.com/flutter/devtools/issues/337 is fixed.
-    /*
     test('hotRestart', () async {
       await env.setupEnvironment();
 
       const evalExpression = 'topLevelFieldForTest';
       final library = EvalOnDartLibrary(
-        'package:flutter_app/main.dart',
+        ['package:flutter_app/main.dart'],
         env.service,
       );
 
@@ -262,7 +259,6 @@ void main() {
 
       await env.tearDownEnvironment();
     });
-    */
   }, tags: 'useFlutterSdk', timeout: const Timeout.factor(4));
 
   group('serviceManagerTests - restoring device-enabled extension:', () {
