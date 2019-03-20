@@ -78,6 +78,7 @@ class ServiceConnectionManager {
     String isolateId,
     Map args,
   }) async {
+    print('Calling service $name');
     final registered = _registeredMethodsForService[name] ?? const [];
     if (registered.length != 1) {
       throw Exception('Expected one registered service for "$name" but found '

@@ -79,18 +79,26 @@ class FlutterTestEnvironment {
   }
 
   Future<void> tearDownEnvironment({bool force = false}) async {
+    print('TDE1');
     if (_needsSetup) {
+      print('TDE2');
       // _needsSetup=true means we've never run setup code or already cleaned up
       return;
     }
+    print('TDE3');
     if (!force && reuseTestEnvironment) {
+      print('TDE4');
       // Skip actually tearing down for better test performance.
       return;
     }
+    print('TDE5');
     if (_beforeTearDown != null) await _beforeTearDown();
+    print('TDE6');
 
     await _service.allFuturesCompleted.future;
+    print('TDE7');
     await _flutter.stop();
+    print('TDE8');
     _flutter = null;
 
     _needsSetup = true;

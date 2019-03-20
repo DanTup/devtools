@@ -544,9 +544,12 @@ void main() async {
     });
 
     test('hotReload', () async {
+      print('HR #1');
       await env.setupEnvironment();
 
+      print('HR #2');
       await serviceManager.performHotReload();
+      print('HR #3');
       // Ensure the inspector does not fall over and die after a hot reload.
       expect(
           tree.toStringDeep(),
@@ -564,16 +567,22 @@ void main() async {
       // TODO(jacobr): would be nice to have some tests that trigger a hot
       // reload that actually changes app state in a meaningful way.
 
+      print('HR #4');
       await env.tearDownEnvironment();
+      print('HR #5');
     });
 
     test('hotRestart', () async {
+      print('HRST #1');
       await env.setupEnvironment();
+      print('HRST #2');
 
       // The important thing about this is that the details tree should scroll
       // instead of re-rooting as the selected row is already visible in the
       // details tree.
+      print('HRST #3');
       simulateRowClick(tree, rowIndex: 4);
+      print('HRST #4');
       expect(
         tree.toStringDeep(),
         equalsIgnoringHashCodes(
@@ -587,24 +596,31 @@ void main() async {
               '          ▼[/icons/inspector/textArea.png] Text\n',
         ),
       );
+      print('HRST #5');
 
       /// After the hot restart some existing calls to the vm service may
       /// timeout and that is ok.
       serviceManager.service.doNotWaitForPendingFuturesBeforeExit();
+      print('HRST #6');
 
       await serviceManager.performHotRestart();
+      print('HRST #7');
       // The isolate starts out paused on a hot restart so we have to resume
       // it manually to make the test pass.
 
       await serviceManager.service
           .resume(serviceManager.isolateManager.selectedIsolate.id);
+      print('HRST #8');
 
       // First UI transition is to an empty tree.
       await detailsTree.nextUiFrame;
+      print('HRST #9');
       expect(tree.toStringDeep(), equalsIgnoringHashCodes('<empty>\n'));
+      print('HRST #10');
 
       // Notice that the selection has been lost due to the hot restart.
       await detailsTree.nextUiFrame;
+      print('HRST #11');
       expect(
         tree.toStringDeep(),
         equalsIgnoringHashCodes(
@@ -618,9 +634,11 @@ void main() async {
               '          ▼[/icons/inspector/textArea.png] Text\n',
         ),
       );
+      print('HRST #12');
 
       // Verify that the selection can actually be changed after a restart.
       simulateRowClick(tree, rowIndex: 4);
+      print('HRST #13');
       expect(
         tree.toStringDeep(),
         equalsIgnoringHashCodes(
@@ -634,7 +652,9 @@ void main() async {
               '          ▼[/icons/inspector/textArea.png] Text\n',
         ),
       );
+      print('HRST #14');
       await env.tearDownEnvironment();
+      print('HRST #15');
     });
   }, tags: 'useFlutterSdk', timeout: const Timeout.factor(8));
 }

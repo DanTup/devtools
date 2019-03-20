@@ -18,7 +18,7 @@ import 'package:vm_service_lib/vm_service_lib_io.dart';
 /// (flutter_tools/).
 
 // Set this to true for debugging to get JSON written to stdout.
-const bool _printDebugOutputToStdOut = false;
+const bool _printDebugOutputToStdOut = true;
 const Duration defaultTimeout = Duration(seconds: 40);
 const Duration appStartTimeout = Duration(seconds: 120);
 const Duration quitTimeout = Duration(seconds: 10);
@@ -74,7 +74,8 @@ abstract class FlutterTestDriver {
     }
     _debugPrint('Spawning flutter $args in ${_projectFolder.path}');
 
-    _proc = await Process.start('flutter', args.toList(),
+    _proc = await Process.start(
+        Platform.isWindows ? 'flutter.bat' : 'flutter', args,
         workingDirectory: _projectFolder.path,
         environment: <String, String>{
           'FLUTTER_TEST': 'true',
@@ -83,7 +84,7 @@ abstract class FlutterTestDriver {
     // This class doesn't use the result of the future. It's made available
     // via a getter for external uses.
     unawaited(_proc.exitCode.then((int code) {
-      _debugPrint('Process exited ($code)');
+      _debugPrint('Flutter process exited ($code)');
       _hasExited = true;
     }));
     _transformToLines(_proc.stdout).listen((String line) => _stdout.add(line));
@@ -94,7 +95,8 @@ abstract class FlutterTestDriver {
 
     // This is just debug printing to aid running/debugging tests locally.
     _stdout.stream.listen(_debugPrint);
-    _stderr.stream.listen(_debugPrint);
+    _stderr.stream.listen((s) => _debugPrint(
+        '     ====== ERROR =======\n     $s\n     ===== /ERROR ======'));
   }
 
   Future<int> _killGracefully() async {
@@ -321,8 +323,9 @@ class FlutterRunTestDriver extends FlutterTestDriver {
           await _waitFor(event: 'app.debugPort', timeout: appStartTimeout);
       final String wsUriString = debugPort['params']['wsUri'];
       _vmServiceWsUri = Uri.parse(wsUriString);
-      vmService = VmServiceWrapper(
-          await vmServiceConnectUri(_vmServiceWsUri.toString()));
+      vmService = VmServiceWrapper(await vmServiceConnectUri(
+          _vmServiceWsUri.toString(),
+          log: new PrintLog()));
       vmService.onSend.listen((String s) => _debugPrint('==> $s'));
       vmService.onReceive.listen((String s) => _debugPrint('<== $s'));
       await Future.wait(<Future<Success>>[
@@ -480,4 +483,16 @@ class FlutterRunConfiguration {
   final bool withDebugger;
   final bool pauseOnExceptions;
   final bool trackWidgetCreation;
+}
+
+class PrintLog implements Log {
+  @override
+  void warning(String message) {
+    print(message);
+  }
+
+  @override
+  void severe(String message) {
+    print(message);
+  }
 }
