@@ -21,4 +21,5 @@ script: ./tool/travis.sh
 
 cache:
   directories:
-  - $HOME/.pub-cache
+    - $HOME/.pub-cache
+    - packages/flutter

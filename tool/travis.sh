@@ -23,6 +23,27 @@ echo "which dart: " `which dart`
 pub get
 pub global activate webdev
 
+function setupFlutter() {
+    # For faster builds, the flutter folders is included in the Travis cache.
+    # This code needs to clone it if it doesn't exist, but otherwise fetch
+    # and update to latest. Flutter's own logic will take care of refreshing
+    # what's in the cache folder if required. If there are no changes,
+    # it'll save re-downloading the SDK and other components.
+    #
+    # Note: This would work better against dev/beta/stable that don't change
+    # as often as master!
+    mkdir -p flutter
+    cd flutter
+    if [[ ! -d .git ]]; then
+      git init;
+      git remote add origin https://github.com/flutter/flutter.git;
+    fi
+    git fetch
+    git reset --hard origin/master
+    git checkout origin/master
+    cd ..
+}
+
 if [ "$BOT" = "main" ]; then
 
     # Verify that dartfmt has been run.
@@ -59,7 +80,7 @@ elif [ "$BOT" = "flutter_sdk_tests" ]; then
     cd ..
     export PATH=`pwd`/flutter/bin:`pwd`/flutter/bin/cache/dart-sdk/bin:$PATH
     time (
-        git clone https://github.com/flutter/flutter.git flutter
+        setupFlutter
         flutter config --no-analytics
         flutter doctor
     )
