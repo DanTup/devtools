@@ -566,9 +566,7 @@ void main() async {
 
       await env.tearDownEnvironment();
     });
-// TODO(jacobr): uncomment out the hotRestart tests once
-// https://github.com/flutter/devtools/issues/337 is fixed.
-/*
+
     test('hotRestart', () async {
       await env.setupEnvironment();
 
@@ -638,7 +636,6 @@ void main() async {
       );
       await env.tearDownEnvironment();
     });
-*/
   }, tags: 'useFlutterSdk', timeout: const Timeout.factor(8));
 }
 
