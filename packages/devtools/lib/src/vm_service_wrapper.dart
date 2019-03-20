@@ -413,7 +413,7 @@ class VmServiceWrapper implements VmService {
 
   int trackID = 0;
   Future<T> _trackFuture<T>(String name, Future<T> future) {
-    final trackedFuture = new TrackedFuture('name.${trackID++}', future);
+    final trackedFuture = new TrackedFuture('$name.${trackID++}', future);
     print('Tracking future: ${trackedFuture.name}');
     if (allFuturesCompleted.isCompleted) {
       allFuturesCompleted = Completer<bool>();
