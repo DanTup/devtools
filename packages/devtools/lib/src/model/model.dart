@@ -64,6 +64,7 @@ class App {
   void _bind() {
     final js.JsObject binding = js.JsObject.jsify(<dynamic, dynamic>{});
     binding['send'] = (String method, int id, dynamic arg) {
+      print('Inside send ($method)');
       try {
         final dynamic result = _dispatch(method, id, arg);
         Future<dynamic>.value(result).then((dynamic result) {
@@ -72,6 +73,7 @@ class App {
           _sendReponseError(id, error, stackTrace);
         });
       } catch (error, stackTrace) {
+        print('ERROR! $error');
         _sendReponseError(id, error, stackTrace);
       }
     };
@@ -96,6 +98,7 @@ class App {
   }
 
   Future<bool> connectDialogIsVisible([dynamic _]) async {
+    print('RUNNING IsVisible');
     return framework.connectDialog.isVisible();
   }
 

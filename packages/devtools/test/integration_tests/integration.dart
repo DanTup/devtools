@@ -52,12 +52,17 @@ class DevtoolsManager {
   final Uri baseUri;
 
   Future<void> start(AppFixture appFixture, {Uri overrideUri}) async {
+    print('START1');
     final Uri baseAppUri = baseUri.resolve(
         'index.html?uri=${Uri.encodeQueryComponent(appFixture.serviceUri.toString())}');
+    print('START2');
     await tabInstance.tab.navigate('${overrideUri ?? baseAppUri}');
+    print('START3');
 
     // wait for app initialization
+    print('START4');
     await tabInstance.getBrowserChannel();
+    print('START5');
 
     // TODO(dantup): Find a better way to wait for something here. This delay
     // fixes the following tests on Windows (list scripts has also been seen to
@@ -66,7 +71,9 @@ class DevtoolsManager {
     //     integration logging log screen postpones write when offscreen [E]
     //     integration debugging lists scripts [E]
     // integration debugging pause [E]
+    print('START6');
     await delay();
+    print('START7');
   }
 
   Future<void> switchPage(String page) async {
@@ -183,7 +190,9 @@ class BrowserTabInstance {
   Stream<AppEvent> get onEvent => _eventStream.stream;
 
   Future<AppResponse> send(String method, [dynamic params]) async {
+    print('Calling $method!');
     _remote ??= await _getAppChannelObject();
+    print('SEND2');
 
     final int id = _nextId++;
 
@@ -191,14 +200,17 @@ class BrowserTabInstance {
     _completers[id] = completer;
 
     try {
+      print('SEND3');
       await tab.wipConnection.runtime.callFunctionOn(
-        "function (method, id, params) { return window['devtools'].send(method, id, params); }",
+        "function (method, id, params) { console.log('doing send!'); return window['devtools'].send(method, id, params); }",
         objectId: _remote.objectId,
         arguments: <dynamic>[method, id, params],
       );
+      print('SEND4');
 
       return completer.future;
     } catch (e, st) {
+      print('SEND5 ERR');
       _completers.remove(id);
       completer.completeError(e, st);
       rethrow;
