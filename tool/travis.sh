@@ -9,15 +9,14 @@ set -ex
 
 pushd packages/devtools
 echo `pwd`
-
-# Force drive letter part to be uppercase, to avoid issues with Dart analysis
-# determining that types don't match because of mismatched drive casing.
-if [[ $TRAVIS_OS_NAME == "windows" ]]; then
-    currentDir=`pwd`
-    currentDir="$(tr '[:lower:]' '[:upper:]' <<< ${currentDir:0:2})${currentDir:2}"
-    cd $currentDir
-    echo `pwd`
-fi
+echo $HOME
+echo $TRAVIS_BUILD_DIR
+cd $HOME
+echo `pwd`
+cd $TRAVIS_BUILD_DIR
+echo `pwd`
+cd c:
+echo `pwd`
 
 
 # Add globally activated packages to the path.
