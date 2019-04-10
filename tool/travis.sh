@@ -13,7 +13,9 @@ echo `pwd`
 
 # Add globally activated packages to the path.
 if [[ $TRAVIS_OS_NAME == "windows" ]]; then
-    export PATH=$PATH:$APPDATA/Roaming/Pub/Cache/bin
+    appDataDir=$APPDATA
+    appDataDir="$(tr '[:upper:]' '[:lower:]' <<< ${appDataDir:0:1})${appDataDir:1}"
+    export PATH=$PATH:$appDataDir/Roaming/Pub/Cache/bin
 else
     export PATH=$PATH:~/.pub-cache/bin
 fi
