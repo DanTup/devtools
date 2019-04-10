@@ -9,14 +9,6 @@ set -ex
 
 pushd packages/devtools
 echo `pwd`
-echo $HOME
-echo $TRAVIS_BUILD_DIR
-cd $HOME
-echo `pwd`
-cd $TRAVIS_BUILD_DIR
-echo `pwd`
-cd c:
-echo `pwd`
 
 
 # Add globally activated packages to the path.
