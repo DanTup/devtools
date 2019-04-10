@@ -1,16 +1,14 @@
+os:
+  - linux
+  - osx
+  - windows
+
 language: dart
 dart:
   - "dev/raw/latest"
 # Disable testing on stable; it creates many more bots, and we generally only need
 # test coverage for the SDK version we're developing and distributing against.
 #  - stable
-
-os:
-  - linux
-  - osx
-  - windows
-
-dist: trusty
 
 addons:
   chrome: stable
