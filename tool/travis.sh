@@ -5,21 +5,10 @@
 # found in the LICENSE file.
 
 # Fast fail the script on failures.
-set -e
 
-# Download dart
-echo Downloading Dart...
-if [[ $TRAVIS_OS_NAME == "osx" ]]; then
-    export DART_OS=macos;
-elif [[ $TRAVIS_OS_NAME == "linux" ]]; then
-    export DART_OS=linux;
-else
-    export DART_OS=windows;
-fi
-curl https://storage.googleapis.com/dart-archive/channels/$DART_CHANNEL/latest/sdk/dartsdk-$DART_OS-x64-release.zip > dart-sdk.zip
-unzip dart-sdk.zip > /dev/null
-echo Adding Dart and Pub/bin to PATH...
-export PATH=$PATH:`pwd`/dart-sdk/bin
+pushd packages/devtools
+echo `pwd`
+
 if [[ $TRAVIS_OS_NAME == "windows" ]]; then
     export PATH=$PATH:$APPDATA/Roaming/Pub/Cache/bin
 else
@@ -32,9 +21,6 @@ if [[ $TRAVIS_OS_NAME == "windows" ]]; then
     # https://travis-ci.community/t/installing-google-chrome-stable-but-i-cant-find-it-anywhere/2118
     choco install googlechrome --acceptlicense --yes --no-progress
 fi
-
-pushd packages/devtools
-echo `pwd`
 
 # In GitBash on Windows, we have to call pub.bat so we alias `pub` in this script to call the
 # correct one based on the OS.

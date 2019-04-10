@@ -1,7 +1,9 @@
-# This isn't too important, but we don't use Dart because we download it ourselves now.
-# With `shell` the Chrome addon wont' install on Linux.
-# node_js works for macOS + Linux but hangs on Windows, so that's overridden below.
-language: c
+language: dart
+dart:
+  - "dev/raw/latest"
+# Disable testing on stable; it creates many more bots, and we generally only need
+# test coverage for the SDK version we're developing and distributing against.
+#  - stable
 
 os:
   - linux
@@ -17,25 +19,15 @@ matrix:
   # TODO(dantup): Fix these failures on Windows and remove this
   allow_failures:
     - os: windows
-      env: DART_CHANNEL=dev/raw BOT=test_ddc
+      env: BOT=test_ddc
     - os: windows
-      env: DART_CHANNEL=dev/raw BOT=test_dart2js
-    - os: windows
-      env: DART_CHANNEL=stable/release BOT=test_ddc
-    - os: windows
-      env: DART_CHANNEL=stable/release BOT=test_dart2js
+      env: BOT=test_dart2js
 
 env:
-  - DART_CHANNEL=dev/raw BOT=main
-  - DART_CHANNEL=dev/raw BOT=test_ddc
-  - DART_CHANNEL=dev/raw BOT=test_dart2js
-  - DART_CHANNEL=dev/raw BOT=flutter_sdk_tests
-  # Disable testing on stable; it creates many more bots, and we generally only need
-  # test coverage for the SDK version we're developing and distributing against.
-  # - DART_CHANNEL=stable/release BOT=main
-  # - DART_CHANNEL=stable/release BOT=test_ddc
-  # - DART_CHANNEL=stable/release BOT=test_dart2js
-  # - DART_CHANNEL=stable/release BOT=flutter_sdk_tests
+  - BOT=main
+  - BOT=test_ddc
+  - BOT=test_dart2js
+  - BOT=flutter_sdk_tests
 
 script: ./tool/travis.sh
 
