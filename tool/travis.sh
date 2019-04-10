@@ -10,12 +10,18 @@ set -ex
 pushd packages/devtools
 echo `pwd`
 
+# Force uppercase drive letters for all of PATH
+export PATH="${PATH//\/c\//\/C\/}"
+echo $PATH
+
+# Force uppercase drive lettter for cwd
+cwd=`pwd`
+cd "${cwd//\/c\//\/C\/}"
+
 
 # Add globally activated packages to the path.
 if [[ $TRAVIS_OS_NAME == "windows" ]]; then
-    appDataDir=$APPDATA
-    appDataDir="$(tr '[:upper:]' '[:lower:]' <<< ${appDataDir:0:1})${appDataDir:1}"
-    export PATH=$PATH:$appDataDir/Roaming/Pub/Cache/bin
+    export PATH=$PATH:$APPDATA/Pub/Cache/bin
 else
     export PATH=$PATH:~/.pub-cache/bin
 fi
