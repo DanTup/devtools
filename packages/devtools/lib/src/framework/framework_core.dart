@@ -5,14 +5,13 @@
 import 'dart:async';
 import 'dart:html' hide Screen;
 
-import 'package:devtools/src/utils.dart';
-
 import '../../devtools.dart' as devtools show version;
 import '../core/message_bus.dart';
 import '../globals.dart';
 import '../service.dart';
 import '../service_manager.dart';
 import '../ui/theme.dart' as theme;
+import '../utils.dart';
 import '../vm_service_wrapper.dart';
 
 typedef ErrorReporter = void Function(String title, dynamic error);
