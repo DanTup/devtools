@@ -62,10 +62,15 @@ class DevtoolsManager {
     // TODO(dantup): Find a better way to wait for something here. This delay
     // fixes the following tests on Windows (list scripts has also been seen to
     // fail elsewhere).
-    //     integration logging displays log data [E]
-    //     integration logging log screen postpones write when offscreen [E]
-    //     integration debugging lists scripts [E]
-    // integration debugging pause [E]
+    //     integration logging displays log data
+    //     integration logging log screen postpones write when offscreen
+    //     integration debugging lists scripts
+    //     integration debugging pause
+    //     integration app can switch pages
+    // The issues seem to be that we haven't fully connected to the VM service
+    // and loaded. For example, some tests immediately call `switchPage` and get
+    // "page logging not found".
+    await delay();
     await delay();
   }
 
