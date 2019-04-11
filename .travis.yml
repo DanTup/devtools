@@ -15,7 +15,7 @@ addons:
 
 matrix:
   # TODO(dantup): Fix these failures on Windows and remove this
-  allow_failures:
+  exclude:
     - os: windows
       env: BOT=test_ddc
     - os: windows
