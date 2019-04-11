@@ -15,7 +15,7 @@ import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart'
 
 // Change this if you want to be able to see Chrome opening while tests run
 // to aid debugging.
-const _useChromeHeadless = true;
+const _useChromeHeadless = false;
 
 class Chrome {
   factory Chrome.from(String executable) {
