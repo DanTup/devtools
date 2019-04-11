@@ -17,6 +17,9 @@ import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart'
 // to aid debugging.
 const _useChromeHeadless = true;
 
+// Running with headless Chrome on Windows seems to result in inexplicable hangs.
+final _headlessWorksForOS = Platform.isWindows == false;
+
 class Chrome {
   factory Chrome.from(String executable) {
     return FileSystemEntity.isFileSync(executable)
@@ -78,7 +81,7 @@ class Chrome {
       '--user-data-dir=${getCreateChromeDataDir()}',
       '--remote-debugging-port=$debugPort'
     ];
-    if (_useChromeHeadless) {
+    if (_useChromeHeadless && _headlessWorksForOS) {
       args.addAll(<String>[
         '--headless',
         '--disable-gpu',

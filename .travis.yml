@@ -13,14 +13,6 @@ dart:
 addons:
   chrome: stable
 
-matrix:
-  # TODO(dantup): Fix these failures on Windows and remove this
-  exclude:
-    - os: windows
-      env: BOT=test_ddc
-    - os: windows
-      env: BOT=test_dart2js
-
 env:
   - BOT=main
   - BOT=test_ddc
