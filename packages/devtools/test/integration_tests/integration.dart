@@ -320,13 +320,9 @@ class WebdevFixture {
   }
 
   static Future<void> build({
-    bool release = false,
     bool verbose = false,
   }) async {
     final List<String> cliArgs = ['build'];
-    if (release) {
-      cliArgs.add('--release');
-    }
 
     final process = await _runWebdev(cliArgs);
 

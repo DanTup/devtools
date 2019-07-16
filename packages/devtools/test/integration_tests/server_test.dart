@@ -17,11 +17,8 @@ void main() {
   DevToolsServerDriver server;
 
   setUp(() async {
-    final bool testInReleaseMode =
-        Platform.environment['WEBDEV_RELEASE'] == 'true';
-
     // Build the app, as the server can't start without the build output.
-    await WebdevFixture.build(release: testInReleaseMode, verbose: true);
+    await WebdevFixture.build(verbose: true);
 
     // The packages folder needs to be renamed to `pack` for the server to work.
     if (await Directory('build/pack').exists()) {
