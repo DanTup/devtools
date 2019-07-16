@@ -74,5 +74,5 @@ void main() {
 
     // Expect the VM service to see the launchDevTools service registered.
     expect(registeredServices, contains('launchDevTools'));
-  });
+  }, timeout: const Timeout.factor(10));
 }
