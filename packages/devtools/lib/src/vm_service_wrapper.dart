@@ -383,12 +383,23 @@ class VmServiceWrapper implements VmService {
   Stream<Event> get onVMEvent => _vmService.onVMEvent;
 
   @override
+  Stream<Event> get onServiceEvent => _vmService.onServiceEvent;
+
+  @override
   Future<Success> pause(String isolateId) {
     return _trackFuture('pause', _vmService.pause(isolateId));
   }
 
   @override
-  Future<Success> registerService(String service, String alias) {
+  Future<Success> registerService(String service, String alias) async {
+    if (await isProtocolVersionLessThan(major: 3, minor: 22)) {
+      final response = await _trackFuture(
+          '_registerService $service',
+          callMethod('_registerService',
+              args: {'service': service, 'alias': alias}));
+      return response as Success;
+    }
+
     return _trackFuture(
         'registerService $service', _vmService.registerService(service, alias));
   }
