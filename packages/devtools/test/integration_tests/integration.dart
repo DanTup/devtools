@@ -357,6 +357,7 @@ class WebdevFixture {
 
   Future<void> teardown() async {
     process.kill();
+    await process.exitCode;
   }
 
   static Future<Process> _runWebdev(List<String> buildArgs) async {
