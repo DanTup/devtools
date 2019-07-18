@@ -18,7 +18,18 @@ void main() {
 
   setUp(() async {
     // Build the app, as the server can't start without the build output.
-    await WebdevFixture.build(verbose: true);
+    for (var i = 0; i < 5; i++) {
+      try {
+        await WebdevFixture.build(verbose: true);
+        break;
+      } catch (e) {
+        final wait = 100 * (2 ^ (i + 1));
+        print(e);
+        print(
+            'Failed to build on attempt $i... waiting ${wait}ms before trying ');
+        await Future.delayed(Duration(milliseconds: wait));
+      }
+    }
 
     // The packages folder needs to be renamed to `pack` for the server to work.
     if (await Directory('build/pack').exists()) {
