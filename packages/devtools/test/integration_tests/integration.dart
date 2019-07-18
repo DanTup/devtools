@@ -381,8 +381,10 @@ class WebdevFixture {
       environment['DART_VM_OPTIONS'] = '';
     }
 
-    final List<String> cliArgs =
-        ['global', 'run', 'webdev'].followedBy(buildArgs).toList();
+    final List<String> cliArgs = ['global', 'run', 'webdev']
+        .followedBy(verbose ? ['-v'] : [])
+        .followedBy(buildArgs)
+        .toList();
 
     final executable = Platform.isWindows ? 'pub.bat' : 'pub';
 
