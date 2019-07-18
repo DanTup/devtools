@@ -1,6 +1,6 @@
 os:
-  - linux
-  - osx
+  # - linux
+  # - osx
   - windows
 
 language: dart
@@ -25,10 +25,10 @@ matrix:
     env: BOT=test_ddc
 
 env:
-  - BOT=main
+  # - BOT=main
   - BOT=test_ddc
-  - BOT=test_dart2js
-  - BOT=flutter_sdk_tests
+  # - BOT=test_dart2js
+  # - BOT=flutter_sdk_tests
 
 script: ./tool/travis.sh
 
