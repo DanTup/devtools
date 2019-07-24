@@ -5,9 +5,9 @@
 import 'dart:async';
 
 Future delay() {
-  return Future.delayed(const Duration(milliseconds: 500));
+  return Future.delayed(const Duration(milliseconds: 5));
 }
 
 Future shortDelay() {
-  return Future.delayed(const Duration(milliseconds: 100));
+  return Future.delayed(const Duration(milliseconds: 1));
 }
