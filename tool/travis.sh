@@ -10,6 +10,21 @@ set -ex
 pushd packages/devtools
 echo `pwd`
 
+if [[ $TRAVIS_OS_NAME == "windows" ]]; then
+    # Disable some Windows Defender things that are known to hurt performance
+    # and cause network issues on Travis Windows
+    # https://travis-ci.community/t/yarn-network-troubles/333/7
+    export PROJECTDIR=$(pwd)
+    export TEMPDIR=$LOCALAPPDATA\\Temp
+
+    powershell Add-MpPreference -ExclusionPath ${PROJECTDIR}
+    powershell Add-MpPreference -ExclusionPath ${TEMPDIR}
+
+    powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableArchiveScanning \$true'"
+    powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableBehaviorMonitoring \$true'"
+    powershell Start-Process -PassThru -Wait PowerShell -ArgumentList "'-Command Set-MpPreference -DisableRealtimeMonitoring \$true'"
+fi
+
 # Add globally activated packages to the path.
 if [[ $TRAVIS_OS_NAME == "windows" ]]; then
     export PATH=$PATH:$APPDATA/Roaming/Pub/Cache/bin
