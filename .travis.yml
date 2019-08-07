@@ -1,11 +1,13 @@
 os:
   - linux
   - osx
+  - windows
 
 language: dart
 dart:
   - "dev/raw/latest"
   - stable
+
 addons:
   chrome: stable
 
