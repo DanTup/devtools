@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:html' as html;
 
+import 'package:sse/client/sse_client.dart';
 import 'package:vm_service/vm_service.dart';
 
 import 'core/message_bus.dart';
@@ -39,6 +40,7 @@ class PerfToolFramework extends Framework {
 
     initGlobalUI();
     initTestingModel();
+    initSseConnection();
   }
 
   void _gAReportExceptions(html.Event e) {
@@ -134,6 +136,19 @@ class PerfToolFramework extends Framework {
   void initTestingModel() {
     final app = App.register(this);
     screensReady.future.then(app.devToolsReady);
+  }
+
+  void initSseConnection() {
+    try {
+      print('Connecting to SSE endpoint...');
+      final channel = SseClient('/api/sse');
+      channel.onOpen.first.then((e) {
+        channel.stream.listen(print);
+        channel.sink.add('Test message from client');
+      });
+    } catch (e) {
+      print('Failed to connect to SSE API: $e');
+    }
   }
 
   void disableAppWithError(String title, [dynamic error]) {

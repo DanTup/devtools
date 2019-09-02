@@ -9,11 +9,13 @@ import 'dart:isolate';
 
 import 'package:args/args.dart';
 import 'package:browser_launcher/browser_launcher.dart';
+import 'package:devtools_server/src/client_manager.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as path;
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as shelf;
 import 'package:shelf_static/shelf_static.dart';
+import 'package:sse/server/sse_handler.dart';
 import 'package:vm_service/utils.dart';
 import 'package:vm_service/vm_service.dart' hide Isolate;
 
@@ -24,6 +26,8 @@ const argPort = 'port';
 const launchDevToolsService = 'launchDevTools';
 
 const errorLaunchingBrowserCode = 500;
+
+final ClientManager clients = ClientManager();
 
 final argParser = ArgParser()
   ..addFlag(
@@ -101,13 +105,18 @@ void serveDevTools({
     defaultDocument: 'index.html',
   );
 
+  final sseHandler = SseHandler(Uri.parse('/api/sse'))
+    ..connections.rest.listen(clients.acceptClient);
+
   // Make a handler that delegates to the correct handler based on path.
   final handler = (shelf.Request request) {
     return request.url.path.startsWith('packages/')
         // request.change here will strip the `packages` prefix from the path
         // so it's relative to packHandler's root.
         ? packHandler(request.change(path: 'packages'))
-        : buildHandler(request);
+        : request.url.path.startsWith('api/sse')
+            ? sseHandler.handler(request)
+            : buildHandler(request);
   };
 
   final server = await shelf.serve(handler, '127.0.0.1', port);
@@ -220,6 +229,15 @@ Future<void> registerLaunchDevToolsService(
 
     service.registerServiceCallback(launchDevToolsService, (params) async {
       try {
+        // First see if we have an existing DevTools client open that we can
+        // reuse.
+        final reusableClient = await clients.findReusableClient();
+        if (reusableClient != null) {
+          await reusableClient.connectToVmService(vmServiceUri);
+          // reusableClient.bringToFront() / Notify / whatever...
+          return {'result': Success().toJson()};
+        }
+
         final uriParams = <String, dynamic>{};
 
         // Copy over queryParams passed by the client
