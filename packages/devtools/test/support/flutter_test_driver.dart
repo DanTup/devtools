@@ -330,6 +330,7 @@ class FlutterRunTestDriver extends FlutterTestDriver {
 
       vmService = VmServiceWrapper(
         await vmServiceConnectUri(_vmServiceWsUri.toString()),
+        _vmServiceWsUri,
         trackFutures: true,
       );
       vmService.onSend.listen((String s) => _debugPrint('==> $s'));
