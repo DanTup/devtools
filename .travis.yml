@@ -1,7 +1,6 @@
 os:
   - linux
   - osx
-  - windows
 
 language: dart
 dart:
@@ -37,16 +36,9 @@ matrix:
   allow_failures:
     - os: windows
 env:
-  - BOT=main
   - BOT=test_ddc
-  - BOT=test_dart2js
-  - BOT=flutter_sdk_tests
 
 script: ./tool/travis.sh
-
-# Only building master means that we don't run two builds for each pull request.
-branches:
-  only: [master]
 
 cache:
   directories:

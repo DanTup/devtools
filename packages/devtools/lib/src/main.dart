@@ -132,7 +132,9 @@ class PerfToolFramework extends Framework {
   }
 
   void initTestingModel() {
+    print('Calling App.Register');
     final app = App.register(this);
+    print('Done alling App.Register!');
     screensReady.future.then(app.devToolsReady);
   }
 

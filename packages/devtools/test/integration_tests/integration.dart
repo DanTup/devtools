@@ -10,7 +10,7 @@ import 'dart:io';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
 import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart'
-    show ConsoleAPIEvent, RemoteObject;
+    show ConsoleAPIEvent, ExceptionDetails, RemoteObject, WipResponse;
 
 import '../support/chrome.dart';
 import '../support/cli_test_driver.dart';
@@ -146,7 +146,9 @@ class BrowserTabInstance {
 
   Future<RemoteObject> getBrowserChannel() async {
     final DateTime start = DateTime.now();
-    final DateTime end = start.add(const Duration(seconds: 30));
+    final DateTime end = start.add(const Duration(seconds: 1));
+
+    await Future.delayed(const Duration(seconds: 25));
 
     while (true) {
       try {
@@ -163,8 +165,19 @@ class BrowserTabInstance {
     }
   }
 
-  Future<RemoteObject> _getAppChannelObject() {
-    return tab.wipConnection.runtime.evaluate('devtools');
+  Future<RemoteObject> _getAppChannelObject() async {
+    final WipResponse response = await tab.wipConnection.runtime
+        .sendCommand('Runtime.evaluate', params: {
+      'expression': 'devtools',
+    });
+
+    if (response.result.containsKey('exceptionDetails')) {
+      print(jsonEncode(response.result));
+      throw ExceptionDetails(
+          response.result['exceptionDetails'] as Map<String, dynamic>);
+    } else {
+      return RemoteObject(response.result['result'] as Map<String, dynamic>);
+    }
   }
 
   int _nextId = 1;

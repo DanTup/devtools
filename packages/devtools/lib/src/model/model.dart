@@ -63,6 +63,7 @@ class App {
   final PerfToolFramework framework;
 
   void _bind() {
+    print('Running bind');
     final js.JsObject binding = js.JsObject.jsify(<dynamic, dynamic>{});
     binding['send'] = (String method, int id, dynamic arg) {
       try {
@@ -73,11 +74,14 @@ class App {
           _sendReponseError(id, error, stackTrace);
         });
       } catch (error, stackTrace) {
+        print(error);
         _sendReponseError(id, error, stackTrace);
       }
     };
 
+    print('Setting JS context');
     js.context['devtools'] = binding;
+    print('Done setting JS context!');
   }
 
   Future<void> devToolsReady(dynamic message) async {
