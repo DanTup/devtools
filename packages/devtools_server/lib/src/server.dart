@@ -353,7 +353,25 @@ Future<void> registerLaunchDevToolsService(
         if (useNativeBrowser) {
           await Process.start('x-www-browser', [uriToLaunch.toString()]);
         } else {
-          await Chrome.start([uriToLaunch.toString()]);
+          final args = <String>[];
+          if (!Platform.isWindows) {
+            args.addAll(<String>[
+              '--headless',
+              // When running headless, Chrome will quit immediately after loading
+              // the page unless we have the debug port open.
+              '--remote-debugging-port=9223',
+              '--disable-gpu',
+              '--no-sandbox',
+            ]);
+          }
+          final proc = await Chrome.start(
+            [uriToLaunch.toString()],
+            args: args,
+          );
+          proc.stdout.listen(
+              (o) => print(jsonEncode({'stdout': String.fromCharCodes(o)})));
+          proc.stderr.listen(
+              (o) => print(jsonEncode({'stderr': String.fromCharCodes(o)})));
         }
 
         emitLaunchEvent(reused: false, notified: false);

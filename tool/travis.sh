@@ -97,8 +97,8 @@ elif [ "$BOT" = "test_dart2js" ]; then
     pub get
     pub global activate webdev
 
-    WEBDEV_RELEASE=true pub run --enable-asserts test -j1 --reporter expanded --exclude-tags useFlutterSdk
-    pub run build_runner test -r -- -j1 --reporter expanded --exclude-tags useFlutterSdk --platform chrome-no-sandbox
+    WEBDEV_RELEASE=true pub run --enable-asserts test -j1 --reporter expanded --exclude-tags useFlutterSdk --name ".*and registers that it is connected.*"
+    pub run build_runner test -r -- -j1 --reporter expanded --exclude-tags useFlutterSdk --platform chrome-no-sandbox --name ".*and registers that it is connected.*"
 
 elif [ "$BOT" = "flutter_sdk_tests" ]; then
 

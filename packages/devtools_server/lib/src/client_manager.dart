@@ -16,12 +16,17 @@ class ClientManager {
   List<DevToolsClient> get allClients => _clients.toList();
 
   void acceptClient(SseConnection connection) {
+    print(jsonEncode({'log': 'Accepting SSE client connection!'}));
     final client = DevToolsClient(connection);
     if (requestNotificationPermissions) {
       client.enableNotifications();
     }
+    print(jsonEncode({'log': 'Adding client!'}));
     _clients.add(client);
-    connection.sink.done.then((_) => _clients.remove(client));
+    connection.sink.done.then((_) {
+      print(jsonEncode({'log': 'Removing client!'}));
+      _clients.remove(client);
+    });
   }
 
   /// Finds an active DevTools instance that is not already connecting to
@@ -54,6 +59,7 @@ class ClientManager {
 class DevToolsClient {
   DevToolsClient(this._connection) {
     _connection.stream.listen((msg) {
+      print(jsonEncode({'log': 'Got msg: $msg'}));
       try {
         final request = jsonDecode(msg);
         switch (request['method']) {

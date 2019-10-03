@@ -43,14 +43,18 @@ class FrameworkCore {
       final finishedCompleter = Completer<void>();
 
       try {
+        print('Connecting !! 21233213112 ');
         final VmServiceWrapper service = await connect(uri, finishedCompleter);
+        print('Done!!!! ');
         if (serviceManager != null) {
+          print('has service manager');
           await serviceManager.vmServiceOpened(
             service,
             onClosed: finishedCompleter.future,
           );
           return true;
         } else {
+          print('no service manager ');
           return false;
         }
       } catch (e) {

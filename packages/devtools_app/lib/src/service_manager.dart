@@ -122,6 +122,7 @@ class ServiceConnectionManager {
     VmServiceWrapper service, {
     @required Future<void> onClosed,
   }) async {
+    print('## vm service opened');
     final serviceStreamName = await service.serviceStreamName;
 
     final vm = await service.getVM();
@@ -155,6 +156,7 @@ class ServiceConnectionManager {
     _isolateManager._service = service;
     _serviceExtensionManager._service = service;
 
+    print('Connected !!!! ');
     _stateController.add(true);
     _connectionAvailableController.add(service);
 

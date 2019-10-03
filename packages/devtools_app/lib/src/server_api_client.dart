@@ -8,7 +8,9 @@ import 'dart:html';
 import 'package:sse/client/sse_client.dart';
 
 class DevToolsServerApiClient {
-  DevToolsServerApiClient() : _channel = SseClient('/api/sse') {
+  DevToolsServerApiClient() {
+    print('Opening SSE connection!');
+    _channel = SseClient('/api/sse');
     _channel.stream.listen((msg) {
       try {
         final request = jsonDecode(msg);
@@ -32,7 +34,7 @@ class DevToolsServerApiClient {
     });
   }
 
-  final SseClient _channel;
+  SseClient _channel;
 
   int _nextRequestId = 0;
   void _send(String method, [Map<String, dynamic> params]) {
@@ -42,10 +44,12 @@ class DevToolsServerApiClient {
   }
 
   void notifyConnected(Uri vmServiceUri) {
+    print('Notifying connected!');
     _send('connected', {'uri': vmServiceUri.toString()});
   }
 
   void notifyDisconnected() {
+    print('Notifying disconnected!');
     _send('disconnected');
   }
 

@@ -15,6 +15,7 @@ void main() {
   // Run in a zone in order to catch all Dart exceptions.
   runZoned(
     () {
+      print(window.location.toString());
       // Initialize the core framework.
       FrameworkCore.init(window.location.toString());
 
@@ -45,6 +46,7 @@ void main() {
               'but DevTools only runs on Chrome.',
           'Reopen this url in a Chrome browser to use DevTools.',
         );
+        print('bad browser');
         return;
       }
 
@@ -72,7 +74,7 @@ void main() {
           // application from the command line and connect to it with DevTools.
           framework.mainElement.clear();
         }
-      });
+      }).catchError(print);
 
       framework.loadScreenFromLocation();
     },
@@ -122,6 +124,7 @@ void _handleUncaughtError(
   Object error,
   StackTrace stackTrace,
 ) {
+  print('$error\n${stackTrace ?? ''}'.trim());
   // TODO(devoncarew): `stackTrace` always seems to be null.
 
   // Report exceptions with DevTools to GA; user's Flutter app exceptions are
