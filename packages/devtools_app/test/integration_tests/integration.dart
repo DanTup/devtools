@@ -334,7 +334,7 @@ class WebdevFixture {
       release ? '--release' : '--no-release'
     ];
 
-    final clean = await _runFlutter(['clean']);
+    final clean = await _runFlutter(['clean'], verbose: verbose);
     await clean.exitCode;
     final process = await _runFlutter(cliArgs, verbose: verbose);
 

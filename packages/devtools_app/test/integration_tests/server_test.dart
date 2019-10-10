@@ -32,7 +32,10 @@ void main() {
 
     // Clear the existing build directory.
     if (Directory('build').existsSync()) {
+      print('Deleting ${Directory('build').path}!');
       Directory('build').deleteSync(recursive: true);
+    } else {
+      print('Directory ${Directory('build').path} did not exist');
     }
     // Build the app, as the server can't start without the build output.
     await WebdevFixture.build(release: testInReleaseMode, verbose: true);
@@ -45,12 +48,17 @@ void main() {
     // The devtools package build directory needs to reflect the latest
     // devtools_app package contents.
     if (Directory('../devtools/build').existsSync()) {
+      print('Deleting ${Directory('../devtools/build').path}!');
       Directory('../devtools/build').deleteSync(recursive: true);
+    } else {
+      print('Directory ${Directory('../devtools/build').path} did not exist');
     }
 
+    print('Renaming ${Directory('build').path} to ../devtools/build');
     Directory('build').renameSync('../devtools/build');
 
     // Start the command-line server.
+    print('Starting the server!');
     server = await DevToolsServerDriver.create();
 
     // Fail tests on any stderr.
