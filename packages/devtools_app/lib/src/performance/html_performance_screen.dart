@@ -22,7 +22,7 @@ class HtmlPerformanceScreen extends HtmlScreen {
       : super(
           name: 'Performance',
           id: 'performance',
-          iconClass: 'octicon-dashboard',
+          iconClass: 'octicon octicon-dashboard',
           enabled: enabled,
           disabledTooltip: disabledTooltip,
         );

@@ -46,7 +46,7 @@ class HtmlDebuggerScreen extends HtmlScreen {
         super(
           name: 'Debugger',
           id: 'debugger',
-          iconClass: 'octicon-bug',
+          iconClass: 'octicon octicon-bug',
           enabled: enabled,
           disabledTooltip: disabledTooltip,
         ) {

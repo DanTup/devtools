@@ -40,7 +40,7 @@ class HtmlInfoScreen extends HtmlScreen {
       : super(
           name: '',
           id: 'info',
-          iconClass: 'octicon-info',
+          iconClass: 'octicon octicon-info',
           showTab: false,
         ) {
     _controller = InfoController(

@@ -26,7 +26,10 @@ import 'logging_controller.dart';
 
 class HtmlLoggingScreen extends HtmlScreen {
   HtmlLoggingScreen()
-      : super(name: 'Logging', id: 'logging', iconClass: 'octicon-clippy') {
+      : super(
+            name: 'Logging',
+            id: 'logging',
+            iconClass: 'octicon octicon-clippy') {
     logCountStatus = HtmlStatusItem();
     logCountStatus.element.text = '';
     addStatusItem(logCountStatus);

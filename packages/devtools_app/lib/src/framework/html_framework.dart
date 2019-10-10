@@ -530,6 +530,7 @@ abstract class HtmlScreen {
     @required this.name,
     @required this.id,
     this.iconClass,
+    this.iconText,
     this.disabledTooltip = 'This screen is not available',
     bool enabled = true,
     this.shortcutCallback,
@@ -549,6 +550,7 @@ abstract class HtmlScreen {
   final String name;
   final String id;
   final String iconClass;
+  final String iconText;
   final String disabledTooltip;
   final bool disabled;
   final bool showTab;

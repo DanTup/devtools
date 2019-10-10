@@ -43,7 +43,7 @@ class HtmlInspectorScreen extends HtmlScreen {
       : super(
           name: 'Flutter Inspector',
           id: inspectorScreenId,
-          iconClass: 'octicon-device-mobile',
+          iconClass: 'octicon octicon-device-mobile',
           enabled: enabled,
           disabledTooltip: disabledTooltip,
         );

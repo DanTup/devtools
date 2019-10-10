@@ -38,7 +38,7 @@ class HtmlMemoryScreen extends HtmlScreen with HtmlSetStateMixin {
       : super(
           name: 'Memory',
           id: memoryScreenId,
-          iconClass: 'octicon-package',
+          iconClass: 'octicon octicon-package',
           enabled: enabled,
           disabledTooltip: disabledTooltip,
         ) {

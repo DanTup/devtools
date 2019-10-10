@@ -48,7 +48,8 @@ class HtmlTimelineScreen extends HtmlScreen {
       : super(
           name: 'Timeline',
           id: timelineScreenId,
-          iconClass: 'octicon-pulse',
+          iconClass: 'material-icons',
+          iconText: 'face',
           enabled: enabled,
           disabledTooltip: disabledTooltip,
         );
