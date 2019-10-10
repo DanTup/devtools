@@ -294,10 +294,9 @@ class WebdevFixture {
 
     _toLines(process.stderr).listen((String line) {
       final err = 'error starting webdev: $line';
+      print(err);
       if (!hasUrl.isCompleted) {
         hasUrl.completeError(err);
-      } else {
-        print(err);
       }
     });
 
@@ -309,7 +308,11 @@ class WebdevFixture {
       // Serving `web` on http://localhost:8080
       if (line.contains('Serving `web`')) {
         final String url = line.substring(line.indexOf('http://'));
-        hasUrl.complete(url);
+        if (!hasUrl.isCompleted) {
+          hasUrl.complete(url);
+        } else {
+          print('Got serving URL ($url) but future has already been completed');
+        }
       }
     });
 
