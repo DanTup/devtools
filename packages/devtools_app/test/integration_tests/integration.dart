@@ -302,7 +302,7 @@ class WebdevFixture {
 
     _toLines(process.stdout).listen((String line) {
       if (verbose) {
-        print('pub run build_runner serve • ${line.trim()}');
+        print('pub run build_runner serve (${process.pid}) • ${line.trim()}');
       }
 
       // Serving `web` on http://localhost:8080
