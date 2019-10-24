@@ -56,6 +56,8 @@ class FrameworkCore {
           );
           return true;
         } else {
+          print(
+              'ServiceManager is null, so we will not call finishedCompleter!!!');
           return false;
         }
       } catch (e) {
