@@ -60,8 +60,10 @@ class AppFixture {
     serviceConnection.dispose();
     print('Waiting for onDone...');
     await serviceConnection.onDone;
-    // print('Waiting 5s');
-    // await Future.delayed(const Duration(seconds: 5));
+    if (Platform.environment['WITH_DELAY'] != null) {
+      print('Waiting 5s');
+      await Future.delayed(const Duration(seconds: 5));
+    }
     print('Killing process');
     process.kill();
   }
