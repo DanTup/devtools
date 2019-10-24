@@ -122,8 +122,9 @@ class ServiceConnectionManager {
     VmServiceWrapper service, {
     @required Future<void> onClosed,
   }) async {
+    String serviceStreamName;
     try {
-      final serviceStreamName = await service.serviceStreamName;
+      serviceStreamName = await service.serviceStreamName;
 
       final vm = await service.getVM();
       this.vm = vm;
