@@ -56,20 +56,8 @@ env:
   - BOT=integration_dart2js USE_LOCAL_DEPENDENCIES=true TRY=2
   - BOT=integration_dart2js USE_LOCAL_DEPENDENCIES=true TRY=3
   - BOT=integration_dart2js USE_LOCAL_DEPENDENCIES=true TRY=4
-  - BOT=integration_dart2js USE_LOCAL_DEPENDENCIES=true TRY=5
-  - BOT=integration_dart2js USE_LOCAL_DEPENDENCIES=true TRY=6
-  - BOT=integration_dart2js USE_LOCAL_DEPENDENCIES=true TRY=7
-  - BOT=integration_dart2js USE_LOCAL_DEPENDENCIES=true TRY=8
-  - BOT=integration_dart2js USE_LOCAL_DEPENDENCIES=true TRY=9
   - BOT=integration_dart2js USE_LOCAL_DEPENDENCIES=true TRY=1 WITH_DELAY=true
   - BOT=integration_dart2js USE_LOCAL_DEPENDENCIES=true TRY=2 WITH_DELAY=true
-  - BOT=integration_dart2js USE_LOCAL_DEPENDENCIES=true TRY=3 WITH_DELAY=true
-  - BOT=integration_dart2js USE_LOCAL_DEPENDENCIES=true TRY=4 WITH_DELAY=true
-  - BOT=integration_dart2js USE_LOCAL_DEPENDENCIES=true TRY=5 WITH_DELAY=true
-  - BOT=integration_dart2js USE_LOCAL_DEPENDENCIES=true TRY=6 WITH_DELAY=true
-  - BOT=integration_dart2js USE_LOCAL_DEPENDENCIES=true TRY=7 WITH_DELAY=true
-  - BOT=integration_dart2js USE_LOCAL_DEPENDENCIES=true TRY=8 WITH_DELAY=true
-  - BOT=integration_dart2js USE_LOCAL_DEPENDENCIES=true TRY=9 WITH_DELAY=true
 
 script: ./tool/travis.sh
 
