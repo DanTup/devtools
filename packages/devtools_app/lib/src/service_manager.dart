@@ -122,49 +122,58 @@ class ServiceConnectionManager {
     VmServiceWrapper service, {
     @required Future<void> onClosed,
   }) async {
-    final serviceStreamName = await service.serviceStreamName;
+    try {
+      final serviceStreamName = await service.serviceStreamName;
 
-    final vm = await service.getVM();
-    this.vm = vm;
+      final vm = await service.getVM();
+      this.vm = vm;
 
-    sdkVersion = vm.version;
-    if (sdkVersion.contains(' ')) {
-      sdkVersion = sdkVersion.substring(0, sdkVersion.indexOf(' '));
-    }
+      sdkVersion = vm.version;
+      if (sdkVersion.contains(' ')) {
+        sdkVersion = sdkVersion.substring(0, sdkVersion.indexOf(' '));
+      }
 
-    this.service = service;
-    serviceAvailable.complete();
+      this.service = service;
+      serviceAvailable.complete();
 
-    connectedApp = ConnectedApp();
+      connectedApp = ConnectedApp();
 
-    void handleServiceEvent(Event e) {
-      if (e.kind == EventKind.kServiceRegistered) {
-        if (!_registeredMethodsForService.containsKey(e.service)) {
-          _registeredMethodsForService[e.service] = [e.method];
-          final StreamController<bool> streamController =
-              _getServiceRegistrationController(e.service);
-          streamController.add(true);
-        } else {
-          _registeredMethodsForService[e.service].add(e.method);
+      void handleServiceEvent(Event e) {
+        if (e.kind == EventKind.kServiceRegistered) {
+          if (!_registeredMethodsForService.containsKey(e.service)) {
+            _registeredMethodsForService[e.service] = [e.method];
+            final StreamController<bool> streamController =
+                _getServiceRegistrationController(e.service);
+            streamController.add(true);
+          } else {
+            _registeredMethodsForService[e.service].add(e.method);
+          }
         }
       }
+
+      service.onEvent(serviceStreamName).listen(handleServiceEvent);
+
+      _isolateManager._service = service;
+      _serviceExtensionManager._service = service;
+
+      print('Sending stateChange true');
+      _stateController.add(true);
+      _connectionAvailableController.add(service);
+
+      await _isolateManager._initIsolates(vm.isolates);
+      service.onIsolateEvent.listen(_isolateManager._handleIsolateEvent);
+      service.onExtensionEvent
+          .listen(_serviceExtensionManager._handleExtensionEvent);
+
+      print('Setting up closed handler');
+      unawaited(onClosed.then((_) {
+        print('VM service was closed!');
+        vmServiceClosed();
+      }));
+    } catch (e) {
+      print('!!!!!!!!');
+      print(e);
     }
-
-    service.onEvent(serviceStreamName).listen(handleServiceEvent);
-
-    _isolateManager._service = service;
-    _serviceExtensionManager._service = service;
-
-    print('Sending stateChange true');
-    _stateController.add(true);
-    _connectionAvailableController.add(service);
-
-    await _isolateManager._initIsolates(vm.isolates);
-    service.onIsolateEvent.listen(_isolateManager._handleIsolateEvent);
-    service.onExtensionEvent
-        .listen(_serviceExtensionManager._handleExtensionEvent);
-
-    unawaited(onClosed.then((_) => vmServiceClosed()));
 
     final streamIds = [
       EventStreams.kDebug,
