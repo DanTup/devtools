@@ -158,7 +158,7 @@ elif [ "$BOT" = "integration_dart2js" ]; then
     flutter pub global activate webdev
 
     # We need to run integration tests with -j1 to run with no concurrency.
-    WEBDEV_RELEASE=true flutter test -j1 test/integration_tests/
+    WEBDEV_RELEASE=true flutter test -j1 test/integration_tests/server_test.dart
 
 elif [ "$BOT" = "packages" ]; then
 
