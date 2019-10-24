@@ -56,6 +56,7 @@ void main() {
   });
 
   setUp(() async {
+    await Future.delayed(const Duration(seconds: 3));
     print('\n\n\n\n\nSTARTING NEW TEST ######\n\n');
     compensateForFlutterTestDirectoryBug();
 
@@ -64,6 +65,7 @@ void main() {
     registeredServices = {};
 
     // Start the command-line server.
+    print('creating the server');
     server = await DevToolsServerDriver.create();
 
     // Fail tests on any stderr.
@@ -104,15 +106,20 @@ void main() {
     } finally {
       await sub.cancel();
     }
+
+    print('\n\n\nDone setting up...\n\n\n');
+    await Future.delayed(const Duration(seconds: 3));
   });
 
   tearDown(() async {
-    print('tearing down app...');
+    await Future.delayed(const Duration(seconds: 3));
+    print('\n\n\nTearing down!...\n\n\n');
     await appFixture?.teardown();
     print('killing server...');
     server?.kill();
     await delay();
     print('\n\nFINISHED TEST ######\n\n\n\n\n');
+    await Future.delayed(const Duration(seconds: 3));
   });
 
   test('registers service', () async {

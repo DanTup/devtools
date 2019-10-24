@@ -149,16 +149,10 @@ void _handleUncaughtError(
 
   // Also write them to the console to aid debugging.
   final errorLines = error.toString().split('\n');
-  console.groupCollapsed(
-      'DevTools exception: [${error.runtimeType}] ${errorLines.first}');
+  console.log('DevTools exception: [${error.runtimeType}] ${errorLines.first}');
   console.log(errorLines.skip(1).join('\n'));
 
   if (stackTrace != null) {
-    if (errorLines.length > 1) {
-      console.log('\n');
-    }
     console.log(stackTrace.toString().trim());
   }
-
-  console.groupEnd();
 }

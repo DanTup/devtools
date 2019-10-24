@@ -11,10 +11,8 @@ Future<T> allowedError<T>(Future<T> future, {bool logError = true}) {
   return future.catchError((Object error) {
     if (logError) {
       final errorLines = error.toString().split('\n');
-      window.console
-          .groupCollapsed('[${error.runtimeType}] ${errorLines.first}');
+      window.console.log('[${error.runtimeType}] ${errorLines.first}');
       window.console.log(errorLines.skip(1).join('\n'));
-      window.console.groupEnd();
     }
   });
 }
