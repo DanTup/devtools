@@ -56,6 +56,7 @@ void main() {
   });
 
   setUp(() async {
+    print('\n\n\n\n\nSTARTING NEW TEST ######\n\n');
     compensateForFlutterTestDirectoryBug();
 
     completers = {};
@@ -111,6 +112,7 @@ void main() {
     print('killing server...');
     server?.kill();
     await delay();
+    print('\n\nFINISHED TEST ######\n\n\n\n\n');
   });
 
   test('registers service', () async {
