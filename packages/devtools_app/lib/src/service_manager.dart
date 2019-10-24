@@ -126,7 +126,9 @@ class ServiceConnectionManager {
     try {
       serviceStreamName = await service.serviceStreamName;
 
+      print('Getting VM...');
       final vm = await service.getVM();
+      print('Got VM!');
       this.vm = vm;
 
       sdkVersion = vm.version;

@@ -48,12 +48,16 @@ class FrameworkCore {
           .then((e) => print('finishedCompleter completed!')));
 
       try {
+        print('Connecting...');
         final VmServiceWrapper service = await connect(uri, finishedCompleter);
+        print('Connected!');
         if (serviceManager != null) {
+          print('Calling service manager...');
           await serviceManager.vmServiceOpened(
             service,
             onClosed: finishedCompleter.future,
           );
+          print('Done!');
           return true;
         } else {
           print(
@@ -61,10 +65,12 @@ class FrameworkCore {
           return false;
         }
       } catch (e) {
+        print('Unable to connect!');
         errorReporter('Unable to connect to VM service at "$uri"', e);
         return false;
       }
     } else {
+      print('No uri!');
       return false;
     }
   }
