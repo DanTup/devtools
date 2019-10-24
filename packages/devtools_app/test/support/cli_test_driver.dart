@@ -56,10 +56,13 @@ class AppFixture {
   }
 
   Future<void> teardown() async {
+    print('Calling dispose...');
     serviceConnection.dispose();
-    // Dispose is synchronous, so wait for it to finish closing before
-    // terminating the process.
+    print('Waiting for onDone...');
     await serviceConnection.onDone;
+    // print('Waiting 5s');
+    // await Future.delayed(const Duration(seconds: 5));
+    print('Killing process');
     process.kill();
   }
 }

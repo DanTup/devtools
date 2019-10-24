@@ -6,17 +6,23 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:intl/intl.dart';
+
 import 'chrome.dart';
 
 const verbose = true;
+final timeFormat = DateFormat.Hms();
 
 class DevToolsServerDriver {
   DevToolsServerDriver._(this._process, this._stdin, Stream<String> _stdout,
       Stream<String> _stderr)
-      : stdout = _stdout.map((line) {
-          _trace('<== $line');
-          return line;
-        }).map((line) => jsonDecode(line) as Map<String, dynamic>),
+      : stdout = _stdout
+            .map((line) {
+              _trace('<== $line');
+              return line;
+            })
+            .where((line) => line.startsWith('{'))
+            .map((line) => jsonDecode(line) as Map<String, dynamic>),
         stderr = _stderr.map((line) {
           _trace('<== STDERR $line');
           return line;
@@ -35,7 +41,7 @@ class DevToolsServerDriver {
 
   static void _trace(String message) {
     if (verbose) {
-      print(message);
+      print('[${timeFormat.format(DateTime.now())}] $message');
     }
   }
 

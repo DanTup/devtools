@@ -56,6 +56,7 @@ class DevToolsClient {
     _connection.stream.listen((msg) {
       try {
         final request = jsonDecode(msg);
+        print('Handling ${request['method']}...');
         switch (request['method']) {
           case 'connected':
             _vmServiceUri = Uri.parse(request['params']['uri']);

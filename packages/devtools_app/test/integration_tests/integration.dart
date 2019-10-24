@@ -53,6 +53,7 @@ class DevtoolsManager {
   }) async {
     final Uri baseAppUri = baseUri.resolve(
         'index.html?uri=${Uri.encodeQueryComponent(appFixture.serviceUri.toString())}');
+    print('Navigating to ${overrideUri ?? baseAppUri}');
     await tabInstance.tab.navigate('${overrideUri ?? baseAppUri}');
 
     // wait for app initialization
