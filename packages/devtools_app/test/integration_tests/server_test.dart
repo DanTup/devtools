@@ -13,14 +13,17 @@ import 'package:vm_service/vm_service.dart';
 import '../support/cli_test_driver.dart';
 import '../support/devtools_server_driver.dart';
 import 'integration.dart';
+import 'util.dart';
 
 CliAppFixture appFixture;
 DevToolsServerDriver server;
-final Map<String, Completer<Map<String, dynamic>>> completers = {};
-final StreamController<Map<String, dynamic>> eventController =
-    StreamController.broadcast();
+Map<String, Completer<Map<String, dynamic>>> completers;
+StreamController<Map<String, dynamic>> eventController;
 Stream<Map<String, dynamic>> get events => eventController.stream;
-final Map<String, String> registeredServices = {};
+Map<String, String> registeredServices;
+BrowserManager browserManager;
+BrowserTabInstance tabInstance;
+DevtoolsManager tools;
 
 void main() {
   final bool testInReleaseMode =
@@ -46,10 +49,18 @@ void main() {
     }
 
     Directory('build').renameSync('../devtools/build');
+
+    browserManager = await BrowserManager.create();
+    await Future.delayed(const Duration(seconds: 1));
+    tabInstance = await browserManager.createNewTab();
   });
 
   setUp(() async {
     compensateForFlutterTestDirectoryBug();
+
+    completers = {};
+    eventController = StreamController.broadcast();
+    registeredServices = {};
 
     // Start the command-line server.
     server = await DevToolsServerDriver.create();
@@ -67,13 +78,39 @@ void main() {
         eventController.add(map);
       }
     });
+    final serverStartup = Completer<String>();
+    StreamSubscription sub;
+    try {
+      sub = events.listen((e) {
+        if (e['event'] == 'server.started') {
+          sub.cancel();
+          serverStartup.complete(
+              'http://${e['params']['host']}:${e['params']['port']}/');
+        }
+      });
 
-    await _startApp();
+      print('starting app...');
+      await _startApp();
+
+      print('waiting for server to finish starting up');
+      final serverUrl = await serverStartup.future;
+      print('1');
+      tools = DevtoolsManager(tabInstance, Uri.parse(serverUrl));
+      print('2 (${Uri.parse(serverUrl)})');
+      await tools.start(appFixture,
+          overrideUri: Uri.parse(serverUrl), waitForConnection: false);
+      print('3');
+    } finally {
+      await sub.cancel();
+    }
   });
 
   tearDown(() async {
-    server?.kill();
+    print('tearing down app...');
     await appFixture?.teardown();
+    print('killing server...');
+    server?.kill();
+    await delay();
   });
 
   test('registers service', () async {
@@ -119,7 +156,7 @@ void main() {
       await _send('vm.register', {'uri': appFixture.serviceUri.toString()});
 
       // Send a request to launch DevTools in a browser.
-      await launchDevTools();
+      await launchDevTools(reuseWindows: true);
 
       final serverResponse =
           await _waitForClients(requiredConnectionState: true);
@@ -135,7 +172,7 @@ void main() {
       await _send('vm.register', {'uri': appFixture.serviceUri.toString()});
 
       // Send a request to launch at a certain page.
-      await launchDevTools(page: 'memory');
+      await launchDevTools(reuseWindows: true, page: 'memory');
 
       final serverResponse = await _waitForClients(requiredPage: 'memory');
       expect(serverResponse, isNotNull);
@@ -150,7 +187,7 @@ void main() {
       await _send('vm.register', {'uri': appFixture.serviceUri.toString()});
 
       // Launch on the memory page and wait for the connection.
-      await launchDevTools(page: 'memory');
+      await launchDevTools(reuseWindows: true, page: 'memory');
       await _waitForClients(requiredPage: 'memory');
 
       // Re-launch, allowing reuse and with a different page.
@@ -167,17 +204,22 @@ void main() {
     }, timeout: const Timeout.factor(10));
 
     test('DevTools reports disconnects from a VM', () async {
+      print('t1');
       // Register the VM.
       await _send('vm.register', {'uri': appFixture.serviceUri.toString()});
+      print('t2');
 
       // Send a request to launch DevTools in a browser.
-      await launchDevTools();
+      await launchDevTools(reuseWindows: true);
+      print('t3');
 
       // Wait for the DevTools to inform server that it's connected.
       await _waitForClients(requiredConnectionState: true);
+      print('t4');
 
       // Terminate the VM.
       await appFixture.teardown();
+      print('t5');
 
       // Ensure the client is marked as disconnected.
       final serverResponse =
@@ -199,7 +241,7 @@ void main() {
       await _send('vm.register', {'uri': appFixture.serviceUri.toString()});
 
       // Send a request to launch DevTools in a browser.
-      await launchDevTools();
+      await launchDevTools(reuseWindows: true);
 
       {
         final serverResponse =
@@ -224,7 +266,7 @@ void main() {
       await _send('vm.register', {'uri': appFixture.serviceUri.toString()});
 
       // Send a request to launch DevTools in a browser.
-      await launchDevTools();
+      await launchDevTools(reuseWindows: true);
 
       // Wait for the DevTools to inform server that it's connected.
       await _waitForClients(requiredConnectionState: true);
@@ -251,9 +293,7 @@ void main() {
           equals(appFixture.serviceUri.toString()));
     }, timeout: const Timeout.factor(10));
     // The API only works in release mode.
-    // TODO(dantup): Remove '|| true' once tests are not flaky.
-    //   https://github.com/flutter/devtools/issues/1236
-  }, skip: !testInReleaseMode || true);
+  }, skip: !testInReleaseMode);
 }
 
 Future<Map<String, dynamic>> launchDevTools({
@@ -314,8 +354,10 @@ Future<Map<String, dynamic>> _waitForClients({
               clients
                   .any((c) => c['hasConnection'] == requiredConnectionState));
     },
-    timeout: const Duration(seconds: 10),
-    timeoutMessage: 'Server did not return any known clients',
+    timeout: const Duration(seconds: 30),
+    timeoutMessage: 'Server did not return any known clients'
+        '${requiredConnectionState != null ? (requiredConnectionState ? ' that are connected' : ' that are not connected') : ''}'
+        '${requiredPage != null ? ' that are on page $requiredPage' : ''}',
     delay: const Duration(seconds: 1),
   );
   return serverResponse;
