@@ -5,6 +5,7 @@
 import 'dart:async';
 
 import 'package:meta/meta.dart';
+import 'package:pedantic/pedantic.dart';
 
 import '../../devtools.dart' as devtools show version;
 import '../config_specific/logger.dart';
@@ -43,6 +44,8 @@ class FrameworkCore {
 
     if (uri != null) {
       final finishedCompleter = Completer<void>();
+      unawaited(finishedCompleter.future
+          .then((e) => print('finishedCompleter completed!')));
 
       try {
         final VmServiceWrapper service = await connect(uri, finishedCompleter);

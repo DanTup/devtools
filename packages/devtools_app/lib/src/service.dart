@@ -60,9 +60,11 @@ void _connectWithWebSocket(
   );
 
   ws.sink.done.then((_) {
+    print('sink is done');
     finishedCompleter.complete();
     service.dispose();
   }, onError: (e) {
+    print('error in ws.sink.done!!! POSSIBLY LEAKING FINISHED COMPLETER');
     // TODO(jacobr): this may be obsolete code. This case is only useful if the
     // sink throws an error immediately as otherwise the connectedCompleter will
     // have already completed before we get here.
@@ -76,8 +78,10 @@ void _connectWithWebSocket(
 Future<VmServiceWrapper> connect(Uri uri, Completer<void> finishedCompleter) {
   final connectedCompleter = Completer<VmServiceWrapper>();
   if (uri.scheme == 'sse' || uri.scheme == 'sses') {
+    print('connecting with sse');
     _connectWithSse(uri, connectedCompleter, finishedCompleter);
   } else {
+    print('connecting with ws');
     _connectWithWebSocket(uri, connectedCompleter, finishedCompleter);
   }
   return connectedCompleter.future;

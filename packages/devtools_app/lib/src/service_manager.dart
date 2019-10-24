@@ -155,6 +155,7 @@ class ServiceConnectionManager {
     _isolateManager._service = service;
     _serviceExtensionManager._service = service;
 
+    print('Sending stateChange true');
     _stateController.add(true);
     _connectionAvailableController.add(service);
 
@@ -201,6 +202,7 @@ class ServiceConnectionManager {
     sdkVersion = null;
     connectedApp = null;
 
+    print('Sending stateChange false');
     _stateController.add(false);
     _connectionClosedController.add(null);
   }
