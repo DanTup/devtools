@@ -159,15 +159,20 @@ class ServiceConnectionManager {
       _isolateManager._service = service;
       _serviceExtensionManager._service = service;
 
-      print('Sending stateChange true');
+      print('Sending stateChange true 111');
       _stateController.add(true);
+      print('=== 222');
       _connectionAvailableController.add(service);
+      print('=== 333');
 
       await _isolateManager._initIsolates(vm.isolates);
+      print('=== 444');
       service.onIsolateEvent.listen(_isolateManager._handleIsolateEvent);
+      print('=== 555');
       service.onExtensionEvent
           .listen(_serviceExtensionManager._handleExtensionEvent);
 
+      print('=== 666');
       print('Setting up closed handler');
       unawaited(onClosed.then((_) {
         print('VM service was closed!');
