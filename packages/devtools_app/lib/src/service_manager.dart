@@ -125,6 +125,12 @@ class ServiceConnectionManager {
     VmServiceWrapper service, {
     @required Future<void> onClosed,
   }) async {
+    print('Setting up closed handler');
+    unawaited(onClosed.then((_) {
+      print('VM service was closed!');
+      vmServiceClosed();
+    }));
+
     String serviceStreamName;
     try {
       serviceStreamName = await service.serviceStreamName;
@@ -176,11 +182,6 @@ class ServiceConnectionManager {
           .listen(_serviceExtensionManager._handleExtensionEvent);
 
       print('=== 666');
-      print('Setting up closed handler');
-      unawaited(onClosed.then((_) {
-        print('VM service was closed!');
-        vmServiceClosed();
-      }));
     } catch (e) {
       print('!!!!!!!!');
       print(e);
