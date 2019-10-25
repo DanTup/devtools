@@ -6,6 +6,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:devtools_app/src/utils_io.dart';
+import 'package:intl/intl.dart';
 import 'package:path/path.dart' as path;
 import 'package:pedantic/pedantic.dart';
 import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart'
@@ -214,12 +215,15 @@ class ChromeTab {
     });
 
     if (verbose) {
+      final timeFormat = DateFormat.Hms();
       onLogEntryAdded.listen((entry) {
-        print('chrome • log:${entry.source} • ${entry.text} ${entry.url}');
+        print(
+            '[${timeFormat.format(DateTime.now())}]chrome • log:${entry.source} • ${entry.text} ${entry.url}');
       });
 
       onConsoleAPICalled.listen((entry) {
-        print('chrome • console:${entry.type} • '
+        print(
+            '[${timeFormat.format(DateTime.now())}]chrome • console:${entry.type} • '
             '${entry.args.map((a) => a.value).join(', ')}');
       });
 

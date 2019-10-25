@@ -5,6 +5,7 @@
 import 'dart:async';
 import 'dart:core';
 
+import 'package:intl/intl.dart';
 import 'package:meta/meta.dart';
 import 'package:pedantic/pedantic.dart';
 import 'package:vm_service/vm_service.dart' hide Error;
@@ -15,6 +16,8 @@ import 'eval_on_dart_library.dart';
 import 'service_extensions.dart' as extensions;
 import 'service_registrations.dart' as registrations;
 import 'vm_service_wrapper.dart';
+
+final timeFormat = DateFormat.Hms();
 
 // TODO(kenz): add an offline service manager implementation.
 
@@ -326,19 +329,19 @@ class IsolateManager {
   Future<void> _initIsolates(List<IsolateRef> isolates) async {
     _isolates = isolates;
 
-    print('=== 333  1111');
+    print('[${timeFormat.format(DateTime.now())}]=== 333  1111');
     await _initSelectedIsolate(isolates);
-    print('=== 333  2222');
+    print('[${timeFormat.format(DateTime.now())}]=== 333  2222');
 
     if (_selectedIsolate != null) {
       _isolateCreatedController.add(_selectedIsolate);
       _selectedIsolateController.add(_selectedIsolate);
       // On initial connection to running app, service extensions are added from
       // here.
-      print('=== 333  3333');
+      print('[${timeFormat.format(DateTime.now())}]=== 333  3333');
       await _serviceExtensionManager
           ._addRegisteredExtensionRPCs(_selectedIsolate);
-      print('=== 333  4444');
+      print('[${timeFormat.format(DateTime.now())}]=== 333  4444');
     }
   }
 
@@ -522,10 +525,14 @@ class ServiceExtensionManager {
     if (_service == null) {
       return;
     }
+    print('[${timeFormat.format(DateTime.now())}]=== 333  3333 11111');
     final Isolate isolate = await _service.getIsolate(isolateRef.id);
+    print('[${timeFormat.format(DateTime.now())}]=== 333  3333 22222');
     if (isolate.extensionRPCs != null) {
       for (String extension in isolate.extensionRPCs) {
+        print('[${timeFormat.format(DateTime.now())}]=== 333  3333 33333');
         await _maybeAddServiceExtension(extension);
+        print('[${timeFormat.format(DateTime.now())}]=== 333  3333 44444');
       }
 
       if (_pendingServiceExtensions.isEmpty) {
@@ -535,10 +542,12 @@ class ServiceExtensionManager {
       if (!_firstFrameEventReceived) {
         bool didSendFirstFrameEvent = false;
         if (isServiceExtensionAvailable(extensions.didSendFirstFrameEvent)) {
+          print('[${timeFormat.format(DateTime.now())}]=== 333  3333 55555');
           final value = await _service.callServiceExtension(
             extensions.didSendFirstFrameEvent,
             isolateId: _isolateManager.selectedIsolate.id,
           );
+          print('[${timeFormat.format(DateTime.now())}]=== 333  3333 66666');
           didSendFirstFrameEvent =
               value != null && value.json['enabled'] == 'true';
         } else {
@@ -549,17 +558,21 @@ class ServiceExtensionManager {
             ],
             _service,
           );
+          print('[${timeFormat.format(DateTime.now())}]=== 333  3333 777777');
           final InstanceRef value = await flutterLibrary.eval(
             'WidgetsBinding.instance.debugDidSendFirstFrameEvent',
             isAlive: null,
           );
+          print('[${timeFormat.format(DateTime.now())}]=== 333  3333 88888');
 
           didSendFirstFrameEvent =
               value != null && value.valueAsString == 'true';
         }
 
         if (didSendFirstFrameEvent) {
+          print('[${timeFormat.format(DateTime.now())}]=== 333  3333 999999');
           await _onFrameEventReceived();
+          print('[${timeFormat.format(DateTime.now())}]=== 333  3333 10101010');
         }
       }
     }
