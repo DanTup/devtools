@@ -326,15 +326,19 @@ class IsolateManager {
   Future<void> _initIsolates(List<IsolateRef> isolates) async {
     _isolates = isolates;
 
+    print('=== 333  1111');
     await _initSelectedIsolate(isolates);
+    print('=== 333  2222');
 
     if (_selectedIsolate != null) {
       _isolateCreatedController.add(_selectedIsolate);
       _selectedIsolateController.add(_selectedIsolate);
       // On initial connection to running app, service extensions are added from
       // here.
+      print('=== 333  3333');
       await _serviceExtensionManager
           ._addRegisteredExtensionRPCs(_selectedIsolate);
+      print('=== 333  4444');
     }
   }
 
@@ -379,11 +383,15 @@ class IsolateManager {
 
     for (IsolateRef ref in isolates) {
       if (_selectedIsolate == null) {
+        print('=== 333  1111  1111');
         final Isolate isolate = await _service.getIsolate(ref.id);
+        print('=== 333  1111  2222');
         if (isolate.extensionRPCs != null) {
           for (String extensionName in isolate.extensionRPCs) {
             if (_isFlutterExtension(extensionName)) {
+              print('=== 333  1111  3333');
               await _setSelectedIsolate(ref);
+              print('=== 333  1111  4444');
               return;
             }
           }
@@ -396,7 +404,9 @@ class IsolateManager {
       return ref.name.contains(':main(');
     }, orElse: () => null);
 
+    print('=== 333  1111 8888');
     await _setSelectedIsolate(ref ?? isolates.first);
+    print('=== 333  1111 9999');
   }
 
   Future<void> _setSelectedIsolate(IsolateRef ref) async {
