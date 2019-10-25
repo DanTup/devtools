@@ -126,10 +126,6 @@ class ServiceConnectionManager {
     @required Future<void> onClosed,
   }) async {
     print('Setting up closed handler');
-    unawaited(onClosed.then((_) {
-      print('VM service was closed!');
-      vmServiceClosed();
-    }));
 
     String serviceStreamName;
     try {
@@ -149,6 +145,11 @@ class ServiceConnectionManager {
       serviceAvailable.complete();
 
       connectedApp = ConnectedApp();
+
+      unawaited(onClosed.then((_) {
+        print('VM service was closed!');
+        vmServiceClosed();
+      }));
 
       void handleServiceEvent(Event e) {
         if (e.kind == EventKind.kServiceRegistered) {
