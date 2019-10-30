@@ -1,6 +1,4 @@
 os:
-  - linux
-  - osx
   - windows
 
 language: dart
@@ -42,10 +40,7 @@ matrix:
   include:
     - dart: "dev/raw/latest"
       env: BOT=packages
-  # Allow windows bots to fail until we can make the windows tests less flaky.
-  # https://github.com/flutter/devtools/issues/963
-  allow_failures:
-    - os: windows
+
 env:
   - BOT=main
   - BOT=test_ddc
