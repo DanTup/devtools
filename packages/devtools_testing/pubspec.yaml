@@ -21,7 +21,7 @@ dependencies:
   package_resolver: ^1.0.0
   pedantic: ^1.7.0
   test: any # This version is pinned by Flutter so we don't need to set one explicitly.
-  vm_service: ^4.0.2
+  vm_service: 4.0.4 # TODO(dantup): Revert to ^4.0.4 once getSupportedProtocols issue fixed
 
 dependency_overrides:
 # The "#OVERRIDE_FOR_DEVELOPMENT" lines are stripped out when we publish.
