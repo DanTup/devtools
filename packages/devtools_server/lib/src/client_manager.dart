@@ -8,7 +8,7 @@ import 'package:sse/server/sse_handler.dart';
 
 import 'server_api.dart';
 
-const _verbose = false;
+const _verbose = true;
 
 void _log(String message) {
   if (_verbose) {
@@ -37,7 +37,10 @@ class ClientManager {
       client.enableNotifications();
     }
     _clients.add(client);
-    connection.sink.done.then((_) => _clients.remove(client));
+    connection.sink.done.then((_) {
+      _log('client disconnected');
+      _clients.remove(client);
+    });
   }
 
   /// Finds an active DevTools instance that is not already connecting to
@@ -68,8 +71,8 @@ class ClientManager {
 }
 
 class DevToolsClient {
-  DevToolsClient(this._connection) {
-    _connection.stream.listen((msg) {
+  DevToolsClient(this.connection) {
+    connection.stream.listen((msg) {
       _handleMessage(msg);
     });
   }
@@ -143,7 +146,7 @@ class DevToolsClient {
   void _send(Map<String, dynamic> message) {
     _log('send: $message');
 
-    _connection.sink.add(jsonEncode(message));
+    connection.sink.add(jsonEncode(message));
   }
 
   void _respond(Map<String, dynamic> request) {
@@ -162,7 +165,7 @@ class DevToolsClient {
     _send(message);
   }
 
-  final SseConnection _connection;
+  final SseConnection connection;
   Uri _vmServiceUri;
 
   Uri get vmServiceUri => _vmServiceUri;

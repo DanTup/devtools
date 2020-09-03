@@ -127,6 +127,7 @@ class DevToolsScaffoldState extends State<DevToolsScaffold>
 
     _setupTabController();
 
+    print('subscribing for connect VM events!');
     _connectVmSubscription =
         frameworkController.onConnectVmEvent.listen(_connectVm);
     _showPageSubscription =
@@ -207,10 +208,12 @@ class DevToolsScaffoldState extends State<DevToolsScaffold>
   /// IDE via the server API to reuse the DevTools window after being disconnected
   /// (for example if the user stops a debug session then launches a new one).
   void _connectVm(event) {
+    print('Going to connect to ${event.serviceProtocolUri.toString()}');
     final routeName = routeNameWithQueryParams(context, '/', {
       'uri': event.serviceProtocolUri.toString(),
       if (event.notify) 'notify': 'true',
     });
+    print('pushing named route: $routeName');
     Navigator.of(context).pushReplacementNamed(routeName);
   }
 

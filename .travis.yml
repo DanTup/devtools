@@ -13,7 +13,7 @@ os:
 
 matrix:
   fast_finish: true
-    
+
   # Allow windows bots to fail until we can make the windows tests less flaky.
   # https://github.com/flutter/devtools/issues/963
   allow_failures:
@@ -31,17 +31,17 @@ env:
   global:
     - CHANNEL=dev
   jobs:
-    - BOT=main
-    - BOT=packages
-    - BOT=test_ddc            PLATFORM=vm
-    - BOT=test_ddc            PLATFORM=chrome
-    - BOT=test_dart2js        PLATFORM=vm
-    - BOT=test_dart2js        PLATFORM=chrome
-    - BOT=integration_ddc
+    # - BOT=main
+    # - BOT=packages
+    # - BOT=test_ddc            PLATFORM=vm
+    # - BOT=test_ddc            PLATFORM=chrome
+    # - BOT=test_dart2js        PLATFORM=vm
+    # - BOT=test_dart2js        PLATFORM=chrome
+    # - BOT=integration_ddc
     - BOT=integration_dart2js
-    - BOT=main                CHANNEL=master
-    - BOT=main                CHANNEL=beta
-    - BOT=main                CHANNEL=stable
+    # - BOT=main                CHANNEL=master
+    # - BOT=main                CHANNEL=beta
+    # - BOT=main                CHANNEL=stable
 
 script: ./tool/travis.sh
 

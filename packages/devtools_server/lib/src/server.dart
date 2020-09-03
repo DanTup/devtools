@@ -18,6 +18,7 @@ import 'package:shelf/shelf.dart' as shelf;
 import 'package:shelf/shelf_io.dart' as shelf;
 import 'package:vm_service/utils.dart';
 import 'package:vm_service/vm_service.dart' hide Isolate;
+import 'package:webkit_inspection_protocol/webkit_inspection_protocol.dart';
 
 import 'client_manager.dart';
 import 'external_handlers.dart';
@@ -43,6 +44,9 @@ const launchDevToolsService = 'launchDevTools';
 const errorLaunchingBrowserCode = 500;
 
 ClientManager clients;
+ChromeConnection chromeConnection;
+ChromeTab chromeTab;
+WipConnection wipConnection;
 
 final argParser = ArgParser()
   ..addFlag(
@@ -626,33 +630,47 @@ Future<void> _handleClientsList(
 
 Future<bool> _tryReuseExistingDevToolsInstance(
   Uri vmServiceUri,
-  String page,
+  String page, {
   bool notifyUser,
-) async {
+  bool machineMode,
+}) async {
   // First try to find a client that's already connected to this VM service,
   // and just send the user a notification for that one.
   final existingClient = clients.findExistingConnectedClient(vmServiceUri);
   if (existingClient != null) {
     try {
+      _emitLogEvent('Reusing connected client', machineMode: machineMode);
       await existingClient.showPage(page);
       if (notifyUser) {
         await existingClient.notify();
       }
       return true;
     } catch (e) {
-      print('Failed to reuse existing connected DevTools client');
-      print(e);
+      _emitLogEvent('Failed to reuse existing connected DevTools client',
+          machineMode: machineMode);
+      _emitLogEvent('$e', machineMode: machineMode);
     }
   }
 
   final reusableClient = clients.findReusableClient();
   if (reusableClient != null) {
     try {
+      _emitLogEvent(
+          'Reusing client (keepalive? ${reusableClient.connection.isInKeepAlivePeriod})',
+          machineMode: machineMode);
       await reusableClient.connectToVmService(vmServiceUri, notifyUser);
+      _emitLogEvent(
+          'Sent connect message! (keepalive? ${reusableClient.connection.isInKeepAlivePeriod})',
+          machineMode: machineMode);
+      // ignore: unawaited_futures
+      Future.delayed(const Duration(seconds: 5)).then((_) => _emitLogEvent(
+          '5 seconds later (keepalive? ${reusableClient.connection.isInKeepAlivePeriod})',
+          machineMode: machineMode));
       return true;
     } catch (e) {
-      print('Failed to reuse existing DevTools client');
-      print(e);
+      _emitLogEvent('Failed to reuse existing DevTools client',
+          machineMode: machineMode);
+      _emitLogEvent('$e', machineMode: machineMode);
     }
   }
   return false;
@@ -747,7 +765,8 @@ Future<Map<String, dynamic>> launchDevTools(
       await _tryReuseExistingDevToolsInstance(
         vmServiceUri,
         page,
-        shouldNotify,
+        notifyUser: shouldNotify,
+        machineMode: machineMode,
       )) {
     _emitLaunchEvent(
         reused: true,
@@ -789,20 +808,55 @@ Future<Map<String, dynamic>> launchDevTools(
             '--remote-debugging-port=9223',
             '--disable-gpu',
             '--no-sandbox',
+            '--no-default-browser-check',
+            '--no-first-run',
+            // '--enable-logging',
+            // '--v=1',
+            // '--log-level=0',
           ]
-        : <String>[];
+        : <String>[
+            '--no-default-browser-check',
+            '--no-first-run',
+            '--remote-debugging-port=9223',
+            // '--enable-logging',
+            // '--v=1',
+            // '--log-level=0',
+          ];
+    _emitLogEvent('Spawning Chrome with $args', machineMode: machineMode);
     final proc = await Chrome.start([uriToLaunch.toString()], args: args);
-    if (verboseMode)
+    if (verboseMode) {
       // ignore: unawaited_futures
       proc.exitCode.then((code) => _emitLogEvent(
           'chrome: exited with code $code',
           machineMode: machineMode));
-    proc.stdout.listen((data) => _emitLogEvent(
-        'chrome stdout: ${utf8.decode(data)}',
-        machineMode: machineMode));
-    proc.stderr.listen((data) => _emitLogEvent(
-        'chrome stderr: ${utf8.decode(data)}',
-        machineMode: machineMode));
+      proc.stdout.listen((data) => _emitLogEvent(
+          'chrome stdout: ${utf8.decode(data)}',
+          machineMode: machineMode));
+      proc.stderr.listen((data) => _emitLogEvent(
+          'chrome stderr: ${utf8.decode(data)}',
+          machineMode: machineMode));
+
+      chromeConnection = ChromeConnection('localhost', 9223);
+      chromeTab = await chromeConnection.getTab((tab) => tab.url == uriToLaunch,
+          retryFor: const Duration(seconds: 5));
+      _emitLogEvent('chromeTab: $chromeTab', machineMode: machineMode);
+      wipConnection = await chromeTab?.connect();
+      _emitLogEvent('wipConnection: $wipConnection', machineMode: machineMode);
+      await wipConnection?.log?.enable();
+      wipConnection?.log?.onEntryAdded?.listen((LogEntry entry) {
+        _emitLogEvent('WIP CONSOLE: ${entry.text}', machineMode: machineMode);
+      });
+      await wipConnection?.runtime?.enable();
+      wipConnection?.runtime?.onConsoleAPICalled
+          ?.where((ConsoleAPIEvent event) => event.type == 'log')
+          ?.listen((ConsoleAPIEvent event) {
+        if (event.args.isNotEmpty) {
+          final RemoteObject message = event.args.first;
+          final String value = '${message.value}';
+          _emitLogEvent('WIP CONSOLE: $value', machineMode: machineMode);
+        }
+      });
+    }
     browserPid = proc.pid;
   }
   _emitLaunchEvent(

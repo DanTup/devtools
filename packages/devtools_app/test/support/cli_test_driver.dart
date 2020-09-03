@@ -9,7 +9,6 @@ import 'dart:io';
 import 'package:devtools_app/src/vm_service_wrapper.dart';
 import 'package:vm_service/utils.dart';
 import 'package:vm_service/vm_service.dart';
-import 'package:vm_service/vm_service_io.dart';
 
 import '../integration_tests/integration.dart';
 
@@ -116,8 +115,8 @@ class CliAppFixture extends AppFixture {
     // Map to WS URI.
     uri = convertToWebSocketUrl(serviceProtocolUrl: uri);
 
-    final VmServiceWrapper serviceConnection =
-        VmServiceWrapper(await vmServiceConnectUri(uri.toString()), uri);
+    final VmServiceWrapper serviceConnection = VmServiceWrapper(
+        await vmServiceConnectUriWithLogging(uri.toString()), uri);
 
     final VM vm = await serviceConnection.getVM();
 
@@ -183,4 +182,29 @@ class CliAppFixture extends AppFixture {
 
     return matches;
   }
+}
+
+/// Connect to the given uri and return a new [VmService] instance.
+Future<VmService> vmServiceConnectUriWithLogging(String wsUri) async {
+  final WebSocket socket = await WebSocket.connect(wsUri);
+  final StreamController<dynamic> controller = StreamController();
+  final Completer streamClosedCompleter = Completer();
+
+  socket.listen(
+    (data) {
+      print('    VM: <== $data');
+      controller.add(data);
+    },
+    onDone: () => streamClosedCompleter.complete(),
+  );
+
+  return VmService(
+    controller.stream,
+    (String message) {
+      print('    VM: ==> $message');
+      socket.add(message);
+    },
+    disposeHandler: () => socket.close(),
+    streamClosed: streamClosedCompleter.future,
+  );
 }

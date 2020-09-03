@@ -212,7 +212,7 @@ packages:
     source: hosted
     version: "4.2.0"
   webkit_inspection_protocol:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: webkit_inspection_protocol
       url: "https://pub.dartlang.org"

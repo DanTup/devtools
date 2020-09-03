@@ -18,6 +18,7 @@ import 'globals.dart';
 /// See `packages/devtools_server/lib/src/client_manager.dart`.
 class DevToolsServerConnection {
   DevToolsServerConnection._(this.sseClient) {
+    print('DevToolsServerConnection constructor');
     sseClient.stream.listen((msg) {
       _handleMessage(msg);
     });
@@ -25,6 +26,7 @@ class DevToolsServerConnection {
   }
 
   static Future<DevToolsServerConnection> connect() async {
+    print('DevToolsServerConnection connect()');
     final baseUri = Uri.base;
     final uri = Uri(
         scheme: baseUri.scheme,
@@ -46,6 +48,7 @@ class DevToolsServerConnection {
       return null;
     }
 
+    print('Creating SSE client');
     final client = SseClient('/api/sse');
     return DevToolsServerConnection._(client);
   }
@@ -62,23 +65,29 @@ class DevToolsServerConnection {
   /// This is called once, sometime after the `DevToolsServerConnection`
   /// instance is created.
   void initFrameworkController() {
+    print('initFrameworkController');
     assert(frameworkController != null);
 
     frameworkController.onConnected.listen((vmServiceUri) {
+      print('initFrameworkController - connected!');
       _notifyConnected(vmServiceUri);
     });
 
     frameworkController.onPageChange.listen((pageId) {
+      print('initFrameworkController - page change!');
       _notifyCurrentPage(pageId);
     });
 
     frameworkController.onDisconnected.listen((_) {
+      print('initFrameworkController - disconnected!');
       _notifyDisconnected();
     });
   }
 
   Future<void> notify() async {
+    print('requesting notification permissions!');
     final permission = await Notification.requestPermission();
+    print('denied!');
     if (permission != 'granted') {
       return;
     }
@@ -94,6 +103,7 @@ class DevToolsServerConnection {
   }
 
   void dismissNotifications() {
+    print('dismissing noticfications!');
     _lastNotification?.close();
   }
 
@@ -102,12 +112,15 @@ class DevToolsServerConnection {
     final json = jsonEncode({'id': id, 'method': method, 'params': params});
     final completer = Completer<T>();
     _completers[id] = completer;
+    print('     client app: ==> $json');
     sseClient.sink.add(json);
     return completer.future;
   }
 
   void _handleMessage(dynamic msg) {
     try {
+      print('     client app: <== $msg');
+      // sseClient.sink.add('client is handling: $msg');
       final Map request = jsonDecode(msg);
 
       if (request.containsKey('method')) {
@@ -129,6 +142,7 @@ class DevToolsServerConnection {
       case 'connectToVm':
         final String uri = params['uri'];
         final bool notify = params['notify'] == true;
+        print('Notifying framework controller of connect event');
         frameworkController.notifyConnectToVmEvent(
           Uri.parse(uri),
           notify: notify,

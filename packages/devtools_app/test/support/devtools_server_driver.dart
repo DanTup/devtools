@@ -11,12 +11,9 @@ import 'chrome.dart';
 const verbose = true;
 
 class DevToolsServerDriver {
-  DevToolsServerDriver._(
-    this._process,
-    this._stdin,
-    Stream<String> _stdout,
-    Stream<String> _stderr,
-  )   : stdout = _convertToMapStream(_stdout),
+  DevToolsServerDriver._(this._process, this._stdin, Stream<String> _stdout,
+      Stream<String> _stderr)
+      : stdout = _convertToMapStream(_stdout),
         stderr = _stderr.map((line) {
           _trace('<== STDERR $line');
           return line;

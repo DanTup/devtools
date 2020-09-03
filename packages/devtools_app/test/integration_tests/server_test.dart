@@ -369,27 +369,31 @@ void main() {
         await _waitForClients(requiredConnectionState: true);
 
         // Terminate the VM.
+        print('Terminating app');
         await appFixture.teardown();
 
         // Ensure the client is marked as disconnected.
         await _waitForClients(requiredConnectionState: false);
 
         // Start up a new app.
+        print('Starting new app and registering');
         await _startApp();
         await _send('vm.register', {'uri': appFixture.serviceUri.toString()});
 
         // Send a new request to launch.
+        print('Sending launch request...');
         await _sendLaunchDevToolsRequest(
             useVmService: useVmService, reuseWindows: true);
 
         // Ensure we now have a single connected client.
+        print('Waiting for client...');
         final serverResponse =
             await _waitForClients(requiredConnectionState: true);
         expect(serverResponse['clients'], hasLength(1));
         expect(serverResponse['clients'][0]['hasConnection'], isTrue);
         expect(serverResponse['clients'][0]['vmServiceUri'],
             equals(appFixture.serviceUri.toString()));
-      }, timeout: const Timeout.factor(10));
+      });
       // The API only works in release mode.
     }, skip: !testInReleaseMode);
   }

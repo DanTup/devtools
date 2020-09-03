@@ -24,6 +24,7 @@ dependencies:
   http_multi_server: ^2.2.0
   usage: ^3.4.1
   vm_service: ^4.1.0
+  webkit_inspection_protocol:
 
 dependency_overrides:
 # The "#OVERRIDE_FOR_DEVELOPMENT" lines are stripped out when we publish.
