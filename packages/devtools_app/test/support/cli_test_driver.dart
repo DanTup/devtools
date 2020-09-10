@@ -120,6 +120,7 @@ class CliAppFixture extends AppFixture {
 
     final VM vm = await serviceConnection.getVM();
 
+    print('Waiting for isolate with PauseStart in CliAppFixture.create()...');
     final Isolate isolate =
         await _waitForIsolate(serviceConnection, 'PauseStart');
     await serviceConnection.resume(isolate.id);
@@ -139,16 +140,30 @@ class CliAppFixture extends AppFixture {
     String pauseEventKind,
   ) async {
     Isolate foundIsolate;
+    print('Waiting for isolate with $pauseEventKind...');
     await waitFor(() async {
       final vm = await serviceConnection.getVM();
-      final isolates = await Future.wait(
-        vm.isolates.map((ref) => serviceConnection.getIsolate(ref.id)),
-      );
+      print('Fetching ${vm.isolates.length} isolates');
+      final isolates = await Future.wait(vm.isolates.map(
+        (ref) => serviceConnection.getIsolate(ref.id).catchError(
+          (error) {
+            print('Fetching isolate ${ref.id} failed ($error). '
+                'Skipping isolate...');
+            return null;
+          },
+        ),
+      ));
+      print('found ${isolates.length} isolates!');
       foundIsolate = isolates.firstWhere(
         (isolate) =>
             isolate is Isolate && isolate.pauseEvent.kind == pauseEventKind,
         orElse: () => null,
       );
+      if (foundIsolate != null) {
+        print('Found isolate with correct state!');
+      } else {
+        print('Did not find isolate with correct state!');
+      }
       return foundIsolate != null;
     });
     return foundIsolate;
