@@ -343,7 +343,13 @@ class VmServiceWrapper implements VmService {
 
   @override
   Future<Isolate> getIsolate(String isolateId) {
-    return _trackFuture('getIsolate', _vmService.getIsolate(isolateId));
+    final callerStack = StackTrace.current;
+    return _trackFuture(
+        'getIsolate',
+        _vmService.getIsolate(isolateId).catchError((e, s) {
+          print('getIsolate failed, call was from $callerStack');
+          throw e;
+        }));
   }
 
   @override
