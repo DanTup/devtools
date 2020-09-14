@@ -19,7 +19,6 @@ import 'config_specific/ide_theme/ide_theme.dart';
 import 'config_specific/import_export/import_export.dart';
 import 'framework_controller.dart';
 import 'globals.dart';
-import 'navigation.dart';
 import 'notifications.dart';
 import 'screen.dart';
 import 'snapshot_screen.dart';
@@ -37,7 +36,7 @@ class DevToolsScaffold extends StatefulWidget {
     Key key,
     @required this.tabs,
     @required this.analyticsProvider,
-    this.initialPage,
+    this.pageId,
     this.actions,
     this.embed = false,
     @required this.ideTheme,
@@ -82,8 +81,8 @@ class DevToolsScaffold extends StatefulWidget {
   /// All of the [Screen]s that it's possible to navigate to from this Scaffold.
   final List<Screen> tabs;
 
-  /// The initial page to render.
-  final String initialPage;
+  /// The ID of a specific page to render (instead of just the first visible).
+  final String pageId;
 
   /// Whether to render the embedded view (without the header).
   final bool embed;
@@ -147,6 +146,15 @@ class DevToolsScaffoldState extends State<DevToolsScaffold>
       // Create a new tab controller to reflect the changed tabs.
       _setupTabController();
       _tabController.index = newIndex;
+    } else if (widget.pageId != null &&
+        widget.tabs[_tabController.index].screenId != widget.pageId) {
+      // If the page changed (eg. the route was modified by pressing back in the
+      // browser), animate to the new one.
+      final newIndex =
+          widget.tabs.indexWhere((t) => t.screenId == widget.pageId);
+      if (newIndex > -1) {
+        _tabController.animateTo(newIndex);
+      }
     }
   }
 
@@ -178,9 +186,9 @@ class DevToolsScaffoldState extends State<DevToolsScaffold>
     _tabController?.dispose();
     _tabController = TabController(length: widget.tabs.length, vsync: this);
 
-    if (widget.initialPage != null) {
-      final initialIndex = widget.tabs
-          .indexWhere((screen) => screen.screenId == widget.initialPage);
+    if (widget.pageId != null) {
+      final initialIndex =
+          widget.tabs.indexWhere((screen) => screen.screenId == widget.pageId);
       if (initialIndex != -1) {
         _tabController.index = initialIndex;
       }
@@ -207,11 +215,15 @@ class DevToolsScaffoldState extends State<DevToolsScaffold>
   /// IDE via the server API to reuse the DevTools window after being disconnected
   /// (for example if the user stops a debug session then launches a new one).
   void _connectVm(event) {
-    final routeName = routeNameWithQueryParams(context, '/', {
+    final routerDelegate =
+        Router.of(context).routerDelegate as DevToolsRouterDelegate;
+    final newArgs = {
+      ...?routerDelegate.currentConfiguration.args,
       'uri': event.serviceProtocolUri.toString(),
       if (event.notify) 'notify': 'true',
-    });
-    Navigator.of(context).pushReplacementNamed(routeName);
+    };
+    routerDelegate.pushNewRoute(
+        routerDelegate.currentConfiguration.screen, newArgs);
   }
 
   /// Switch to the given page ID. This request usually comes from the server API
@@ -235,19 +247,17 @@ class DevToolsScaffoldState extends State<DevToolsScaffold>
   /// the browser's history yet.
   void _pushScreenToLocalPageRoute(int newIndex) {
     if (_tabController.indexIsChanging) {
-      final previousTabIndex = _tabController.previousIndex;
-      ModalRoute.of(context).addLocalHistoryEntry(LocalHistoryEntry(
-        onRemove: () {
-          if (widget.tabs.length >= previousTabIndex) {
-            _tabController.animateTo(previousTabIndex);
-          }
-        },
-      ));
+      final routerDelegate =
+          Router.of(context).routerDelegate as DevToolsRouterDelegate;
+      final newScreenId = widget.tabs[newIndex].screenId;
+      routerDelegate.pushNewRoute(
+          newScreenId, routerDelegate.currentConfiguration.args);
     }
   }
 
   /// Pushes the snapshot screen for an offline import.
   void _pushSnapshotScreenForImport(String screenId) {
+    // TODO(dantup): Is this all broken??
     final args = SnapshotArguments(screenId);
     if (offlineMode) {
       // If we are already in offline mode, only handle routing from existing

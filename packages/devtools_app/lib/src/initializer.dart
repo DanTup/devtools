@@ -117,7 +117,8 @@ class _InitializerState extends State<Initializer>
   void _handleNoConnection() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_checkLoaded() &&
-          ModalRoute.of(context).isCurrent &&
+          // TODO(dantup): What's the equiv?
+          // ModalRoute.of(context).isCurrent &&
           currentDisconnectedOverlay == null) {
         Overlay.of(context).insert(_createDisconnectedOverlay());
 
@@ -152,7 +153,14 @@ class _InitializerState extends State<Initializer>
                 RaisedButton(
                     onPressed: () {
                       hideDisconnectedOverlay();
-                      Navigator.of(context).popAndPushNamed(homeRoute);
+                      // TODO(dantup): Why doesn't this work?
+                      // Assertion failed: "scope != null" is not true.
+                      final routerDelegate = Router.of(context).routerDelegate
+                          as DevToolsRouterDelegate;
+                      final newArgs = {
+                        ...?routerDelegate.currentConfiguration.args,
+                      }..remove('uri');
+                      routerDelegate.pushNewRoute(null, newArgs);
                     },
                     child: const Text('Connect to Another App'))
               else

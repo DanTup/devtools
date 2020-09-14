@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'dart:collection';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pedantic/pedantic.dart';
@@ -43,9 +45,11 @@ import 'timeline/timeline_screen.dart';
 import 'ui/service_extension_widgets.dart';
 import 'utils.dart';
 
-const homeRoute = '/';
-const snapshotRoute = '/snapshot';
-const codeSizeRoute = '/codeSize';
+const landingScreenKey = Key('landing');
+const snapshotRoute = 'snapshot';
+const snapshotKey = Key(snapshotRoute);
+const codeSizeRoute = 'codeSize';
+const codeSizeKey = Key(codeSizeRoute);
 
 /// Top-level configuration for the app.
 @immutable
@@ -77,8 +81,6 @@ class DevToolsApp extends StatefulWidget {
 // TODO(https://github.com/flutter/devtools/issues/1146): Introduce tests that
 // navigate the full app.
 class DevToolsAppState extends State<DevToolsApp> {
-  List<Screen> get _screens => widget.screens.map((s) => s.screen).toList();
-
   PreferencesController get preferences => widget.preferences;
   IdeTheme get ideTheme => widget.ideTheme;
 
@@ -87,86 +89,157 @@ class DevToolsAppState extends State<DevToolsApp> {
     super.initState();
 
     serviceManager.isolateManager.onSelectedIsolateChanged.listen((_) {
-      setState(() {
-        _clearCachedRoutes();
-      });
+      setState(() {});
     });
   }
 
   @override
-  void didUpdateWidget(DevToolsApp oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    _clearCachedRoutes();
-  }
-
-  /// Generates routes, separating the path from URL query parameters.
-  Route _generateRoute(RouteSettings settings) {
-    final uri = Uri.parse(settings.name);
-    final path = uri.path.isEmpty ? homeRoute : uri.path;
-    final args = settings.arguments;
-
-    // Provide the appropriate page route.
-    if (routes.containsKey(path)) {
-      WidgetBuilder builder = (context) => routes[path](
-            context,
-            uri.queryParameters,
-            args,
-          );
-      assert(() {
-        builder = (context) => _AlternateCheckedModeBanner(
-              builder: (context) => routes[path](
-                context,
-                uri.queryParameters,
-                args,
-              ),
-            );
-        return true;
-      }());
-      return MaterialPageRoute(settings: settings, builder: builder);
-    }
-
-    // Return a page not found.
-    return MaterialPageRoute(
-      settings: settings,
-      builder: (BuildContext context) {
-        return DevToolsScaffold.withChild(
-          child: CenteredMessage("'$uri' not found."),
-          ideTheme: ideTheme,
-          analyticsProvider: widget.analyticsProvider,
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: widget.preferences.darkModeTheme,
+      builder: (context, value, _) {
+        return MaterialApp.router(
+          debugShowCheckedModeBanner: false,
+          theme: themeFor(isDarkTheme: value, ideTheme: ideTheme),
+          builder: (context, child) => Notifications(child: child),
+          routerDelegate: DevToolsRouterDelegate(
+              widget.screens, preferences, ideTheme, widget.analyticsProvider),
+          routeInformationParser: DevToolsRouteInformationParser(),
         );
       },
     );
   }
+}
 
-  /// The routes that the app exposes.
-  Map<String, UrlParametersBuilder> get routes {
-    return _routes ??= {
-      homeRoute: (_, params, __) {
-        if (params['uri']?.isNotEmpty ?? false) {
-          final embed = params['embed'] == 'true';
-          final page = params['page'];
+class DevToolsRouterDelegate extends RouterDelegate<DevToolsRouteConfiguration>
+    with ChangeNotifier {
+  DevToolsRouterDelegate(
+    this.screens,
+    this.preferences,
+    this.ideTheme,
+    this.analyticsProvider,
+  );
+
+  final List<DevToolsScreen> screens;
+  final PreferencesController preferences;
+  final IdeTheme ideTheme;
+  final AnalyticsProvider analyticsProvider;
+
+  final routes = ListQueue<DevToolsRouteConfiguration>();
+
+  void pushNewRoute(String screen, [Map<String, String> args]) {
+    print('pushing new route $screen / $args');
+    routes.add(DevToolsRouteConfiguration(screen, args));
+    // Needs to notify the router that the state has changed.
+    notifyListeners();
+  }
+
+  List<Screen> _screens() => screens.map((s) => s.screen).toList();
+  List<Screen> _visibleScreens() => _screens().where(shouldShowScreen).toList();
+
+  Widget _providedControllers({@required Widget child, bool offline = false}) {
+    final _providers = screens
+        .where((s) =>
+            s.createController != null && (offline ? s.supportsOffline : true))
+        .map((s) => s.controllerProvider)
+        .toList();
+
+    return MultiProvider(
+      providers: _providers,
+      child: child,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    WidgetBuilder builder = (context) => _buildWidget();
+
+    assert(() {
+      builder = (context) =>
+          _AlternateCheckedModeBanner(builder: (context) => _buildWidget());
+      return true;
+    }());
+
+    return builder(context);
+  }
+
+  Widget _buildWidget() {
+    final routeConfig = routes.last;
+    final screen = routeConfig.screen;
+    final args = routeConfig.args ?? {};
+
+    switch (screen) {
+      case snapshotRoute:
+        return DevToolsScaffold.withChild(
+          key: snapshotKey,
+          analyticsProvider: analyticsProvider,
+          child: _providedControllers(
+            offline: true,
+            // TODO(dantup): Are these args correct???
+            child: SnapshotScreenBody(
+              SnapshotArguments(args['screen']),
+              _screens(),
+            ),
+          ),
+          ideTheme: ideTheme,
+        );
+        break;
+      case codeSizeRoute:
+        return DevToolsScaffold.withChild(
+          key: codeSizeKey,
+          analyticsProvider: analyticsProvider,
+          child: _providedControllers(
+            child: const CodeSizeBody(),
+          ),
+          ideTheme: ideTheme,
+          actions: [
+            OpenSettingsAction(),
+            OpenAboutAction(),
+          ],
+        );
+        //widget = Text('MY TEST');
+        break;
+      default:
+        final vmServiceUri = args['uri'];
+        if (vmServiceUri == null) {
+          return DevToolsScaffold.withChild(
+            key: landingScreenKey,
+            child: LandingScreenBody(),
+            ideTheme: ideTheme,
+            analyticsProvider: analyticsProvider,
+            actions: [
+              OpenSettingsAction(),
+              OpenAboutAction(),
+            ],
+          );
+        } else {
+          final embed = args['embed'] == 'true';
+          // Support both &page= and /screenId for compatibility.
+          final pageId = args['page'] ?? screen;
           return Initializer(
-            url: params['uri'],
+            url: args['uri'],
             allowConnectionScreenOnDisconnect: !embed,
             builder: (_) {
-              final tabs = embed && page != null
-                  ? _visibleScreens().where((p) => p.screenId == page).toList()
+              final tabs = embed && pageId != null
+                  ? _visibleScreens()
+                      .where((p) => p.screenId == pageId)
+                      .toList()
                   : _visibleScreens();
               if (tabs.isEmpty) {
                 return DevToolsScaffold.withChild(
                   child: CenteredMessage(
-                      'The "$page" screen is not available for this application.'),
+                      'The "$pageId" screen is not available for this application.'),
                   ideTheme: ideTheme,
-                  analyticsProvider: widget.analyticsProvider,
+                  analyticsProvider: analyticsProvider,
                 );
               }
               return _providedControllers(
                 child: DevToolsScaffold(
                   embed: embed,
                   ideTheme: ideTheme,
-                  initialPage: page,
+                  pageId: pageId,
                   tabs: tabs,
-                  analyticsProvider: widget.analyticsProvider,
+                  analyticsProvider: analyticsProvider,
                   actions: [
                     if (serviceManager.connectedApp.isFlutterAppNow) ...[
                       HotReloadButton(),
@@ -181,78 +254,76 @@ class DevToolsAppState extends State<DevToolsApp> {
               );
             },
           );
-        } else {
-          return DevToolsScaffold.withChild(
-            child: LandingScreenBody(),
-            ideTheme: ideTheme,
-            analyticsProvider: widget.analyticsProvider,
-            actions: [
-              OpenSettingsAction(),
-              OpenAboutAction(),
-            ],
-          );
         }
-      },
-      snapshotRoute: (_, __, args) {
-        return DevToolsScaffold.withChild(
-          analyticsProvider: widget.analyticsProvider,
-          child: _providedControllers(
-            offline: true,
-            child: SnapshotScreenBody(args, _screens),
-          ),
-          ideTheme: ideTheme,
-        );
-      },
-      codeSizeRoute: (_, __, ___) {
-        return DevToolsScaffold.withChild(
-          analyticsProvider: widget.analyticsProvider,
-          child: _providedControllers(
-            child: const CodeSizeBody(),
-          ),
-          ideTheme: ideTheme,
-          actions: [
-            OpenSettingsAction(),
-            OpenAboutAction(),
-          ],
-        );
-      },
-    };
-  }
-
-  Map<String, UrlParametersBuilder> _routes;
-
-  void _clearCachedRoutes() {
-    _routes = null;
-  }
-
-  List<Screen> _visibleScreens() => _screens.where(shouldShowScreen).toList();
-
-  Widget _providedControllers({@required Widget child, bool offline = false}) {
-    final _providers = widget.screens
-        .where((s) =>
-            s.createController != null && (offline ? s.supportsOffline : true))
-        .map((s) => s.controllerProvider)
-        .toList();
-
-    return MultiProvider(
-      providers: _providers,
-      child: child,
-    );
+        break;
+    }
   }
 
   @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: widget.preferences.darkModeTheme,
-      builder: (context, value, _) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          theme: themeFor(isDarkTheme: value, ideTheme: ideTheme),
-          builder: (context, child) => Notifications(child: child),
-          onGenerateRoute: _generateRoute,
-        );
-      },
-    );
+  Future<bool> popRoute() {
+    if (routes.length <= 1) {
+      print('skipping popRoute');
+      return SynchronousFuture<bool>(false);
+    }
+    print('removing last route');
+    routes.removeLast();
+    notifyListeners();
+    return SynchronousFuture<bool>(true);
+  }
+
+  @override
+  Future<void> setNewRoutePath(DevToolsRouteConfiguration configuration) {
+    print('setting new route path "${configuration?.screen}"');
+    routes.add(configuration);
+    return SynchronousFuture<void>(null);
+  }
+
+  @override
+  DevToolsRouteConfiguration get currentConfiguration {
+    if (routes.isEmpty) {
+      print('returning null as current config');
+      return null;
+    }
+    print('returning "${routes.last}" as current config');
+    return routes.last;
+  }
+}
+
+class DevToolsRouteInformationParser
+    extends RouteInformationParser<DevToolsRouteConfiguration> {
+  @override
+  Future<DevToolsRouteConfiguration> parseRouteInformation(
+      RouteInformation routeInformation) {
+    print('parsing route: ${routeInformation.location}');
+    return SynchronousFuture<DevToolsRouteConfiguration>(
+        DevToolsRouteConfiguration.fromRouteInformation(routeInformation));
+  }
+
+  @override
+  RouteInformation restoreRouteInformation(
+      DevToolsRouteConfiguration configuration) {
+    print('restoring route: ${configuration?.screen} : ${configuration?.args}');
+    return configuration.toRouteInformation();
+  }
+}
+
+class DevToolsRouteConfiguration {
+  DevToolsRouteConfiguration(this.screen, this.args);
+  final String screen;
+  final Map<String, String> args;
+
+  static DevToolsRouteConfiguration fromRouteInformation(
+      RouteInformation routeInformation) {
+    final uri = Uri.parse(routeInformation.location);
+    return DevToolsRouteConfiguration(
+        uri.path.substring(1), uri.queryParameters);
+  }
+
+  RouteInformation toRouteInformation() {
+    final path = '/${screen ?? ''}';
+    final params = (args?.length ?? 0) != 0 ? args : null;
+    return RouteInformation(
+        location: Uri(path: path, queryParameters: params).toString());
   }
 }
 

@@ -4,13 +4,11 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pedantic/pedantic.dart';
 
 import 'app.dart';
 import 'common_widgets.dart';
 import 'framework/framework_core.dart';
 import 'globals.dart';
-import 'navigation.dart';
 import 'notifications.dart';
 import 'theme.dart';
 import 'url_utils.dart';
@@ -82,7 +80,11 @@ class _LandingScreenBodyState extends State<LandingScreenBody> {
           const Padding(padding: EdgeInsets.only(top: 20.0)),
           RaisedButton(
             child: const Text('Open code size tool'),
-            onPressed: () => Navigator.pushNamed(context, codeSizeRoute),
+            onPressed: () {
+              final routerDelegate =
+                  Router.of(context).routerDelegate as DevToolsRouterDelegate;
+              routerDelegate.pushNewRoute(codeSizeRoute);
+            },
           ),
         ],
       ),
@@ -184,12 +186,9 @@ class _LandingScreenBodyState extends State<LandingScreenBody> {
     );
     if (connected) {
       final connectedUri = serviceManager.service.connectedUri;
-      unawaited(
-        Navigator.pushNamed(
-          context,
-          routeNameWithQueryParams(context, '/', {'uri': '$connectedUri'}),
-        ),
-      );
+      final routerDelegate =
+          Router.of(context).routerDelegate as DevToolsRouterDelegate;
+      routerDelegate.pushNewRoute(null, {'uri': '$connectedUri'});
       final shortUri = connectedUri.replace(path: '');
       Notifications.of(context).push(
         'Successfully connected to $shortUri.',
