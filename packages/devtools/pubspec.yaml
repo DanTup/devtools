@@ -20,6 +20,8 @@ dependencies:
   devtools_shared: 0.9.3
   http: ^0.12.0+1
   intl: ^0.16.0
+  flutter:
+    sdk: flutter
 
 dependency_overrides:
 # The "#OVERRIDE_FOR_DEVELOPMENT" lines are stripped out when we publish.

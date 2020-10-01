@@ -22,7 +22,6 @@ import 'globals.dart';
 import 'navigation.dart';
 import 'notifications.dart';
 import 'screen.dart';
-import 'snapshot_screen.dart';
 import 'status_line.dart';
 import 'theme.dart';
 
@@ -225,30 +224,20 @@ class DevToolsScaffoldState extends State<DevToolsScaffold>
 
     if (newIndex != -1 && newIndex != existingTabIndex) {
       _tabController.animateTo(newIndex);
-      _pushScreenToLocalPageRoute(newIndex);
+      _pushScreen(newIndex);
     }
   }
 
-  /// Pushes tab changes into the navigation history.
-  ///
-  /// Note that this currently works very well, but it doesn't integrate with
-  /// the browser's history yet.
-  void _pushScreenToLocalPageRoute(int newIndex) {
-    if (_tabController.indexIsChanging) {
-      final previousTabIndex = _tabController.previousIndex;
-      ModalRoute.of(context).addLocalHistoryEntry(LocalHistoryEntry(
-        onRemove: () {
-          if (widget.tabs.length >= previousTabIndex) {
-            _tabController.animateTo(previousTabIndex);
-          }
-        },
-      ));
-    }
+  void _pushScreen(int newIndex) {
+    final screen = widget.tabs[newIndex];
+    final routerDelegate =
+        Router.of(context).routerDelegate as DevToolsRouterDelegate;
+    routerDelegate.pushScreenIfNotCurrent(screen.screenId);
   }
 
   /// Pushes the snapshot screen for an offline import.
   void _pushSnapshotScreenForImport(String screenId) {
-    final args = SnapshotArguments(screenId);
+    final args = {'screen': screenId};
     if (offlineMode) {
       // If we are already in offline mode, only handle routing from existing
       // '/snapshot' route. In this case, we need to first pop the existing
@@ -260,11 +249,17 @@ class DevToolsScaffoldState extends State<DevToolsScaffold>
       // We want to avoid this because the routes underneath the existing
       // '/snapshot' route should remain unchanged while '/snapshot' sits on
       // top.
-      if (ModalRoute.of(context).settings.name == snapshotRoute) {
-        Navigator.popAndPushNamed(context, snapshotRoute, arguments: args);
+      final routerDelegate =
+          Router.of(context).routerDelegate as DevToolsRouterDelegate;
+      if (routerDelegate.currentConfiguration.screen == snapshotScreenId) {
+        routerDelegate
+          ..popPage()
+          ..pushScreenIfNotCurrent(snapshotScreenId, args);
       }
     } else {
-      Navigator.pushNamed(context, snapshotRoute, arguments: args);
+      final routerDelegate =
+          Router.of(context).routerDelegate as DevToolsRouterDelegate;
+      routerDelegate.pushScreenIfNotCurrent(snapshotScreenId, args);
     }
     setState(() {
       enterOfflineMode();
@@ -333,7 +328,7 @@ class DevToolsScaffoldState extends State<DevToolsScaffold>
       tabBar = TabBar(
         controller: _tabController,
         isScrollable: true,
-        onTap: _pushScreenToLocalPageRoute,
+        onTap: _pushScreen,
         tabs: [for (var screen in widget.tabs) screen.buildTab(context)],
       );
       preferredSize = isNarrow

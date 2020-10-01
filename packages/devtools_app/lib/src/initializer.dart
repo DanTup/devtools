@@ -47,7 +47,10 @@ class Initializer extends StatefulWidget {
   final bool allowConnectionScreenOnDisconnect;
 
   @override
-  _InitializerState createState() => _InitializerState();
+  _InitializerState createState() {
+    print('creating state for initialier');
+    return _InitializerState();
+  }
 }
 
 class _InitializerState extends State<Initializer>
@@ -65,11 +68,14 @@ class _InitializerState extends State<Initializer>
 
   @override
   void initState() {
+    print('INIT: 11111');
     super.initState();
 
     /// Ensure that we loaded the inspector dependencies before attempting to
     /// build the Provider.
+    print('INIT: 22222');
     ensureInspectorDependencies().then((_) {
+      print('INIT: 22222-22222');
       if (!mounted) return;
       setState(() {
         _dependenciesLoaded = true;
@@ -79,6 +85,7 @@ class _InitializerState extends State<Initializer>
     // If we become disconnected, attempt to reconnect.
     autoDispose(
       serviceManager.onStateChange.where((connected) => !connected).listen((_) {
+        print('INIT: 333333-333333');
         // Try to reconnect (otherwise, will fall back to showing the disconnected
         // overlay).
         _attemptUrlConnection();
@@ -88,33 +95,47 @@ class _InitializerState extends State<Initializer>
     // by onConnectionAvailable and not onStateChange because we also need
     // to have queried what type of app this is before we load the UI.
     autoDispose(
-      serviceManager.onConnectionAvailable.listen((_) => setState(() {})),
+      serviceManager.onConnectionAvailable.listen((_) {
+        print('INIT: 4444-4444');
+        setState(() {
+          print('INIT: 4444-4444-4444');
+        });
+      }),
     );
 
+    print('55555555');
     _attemptUrlConnection();
   }
 
   Future<void> _attemptUrlConnection() async {
+    print('ATTEMPT: 111111');
     if (widget.url == null) {
+      print('ATTEMPT: 22222');
       _handleNoConnection();
       return;
     }
 
+    print('ATTEMPT: 33333');
     final uri = normalizeVmServiceUri(widget.url);
     final connected = await FrameworkCore.initVmService(
       '',
       explicitUri: uri,
-      errorReporter: (message, error) =>
-          Notifications.of(context).push('$message, $error'),
+      errorReporter: (message, error) {
+        print('ATTEMPT: 44444-444444');
+        Notifications.of(context).push('$message, $error');
+      },
     );
 
+    print('ATTEMPT: 555555');
     if (!connected) {
+      print('ATTEMPT: 66666666-6666666');
       _handleNoConnection();
     }
   }
 
   /// Shows a "disconnected" overlay if the [service.serviceManager] is not currently connected.
   void _handleNoConnection() {
+    print('handling no connection!');
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_checkLoaded() &&
           ModalRoute.of(context).isCurrent &&
@@ -152,7 +173,7 @@ class _InitializerState extends State<Initializer>
                 RaisedButton(
                     onPressed: () {
                       hideDisconnectedOverlay();
-                      Navigator.of(context).popAndPushNamed(homeRoute);
+                      Navigator.of(context).popAndPushNamed(homeScreenId);
                     },
                     child: const Text('Connect to Another App'))
               else
