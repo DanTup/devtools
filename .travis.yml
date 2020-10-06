@@ -6,19 +6,19 @@ os:
   - linux
   # TODO(devoncarew): The macos bots are generally failing; we should determine
   # what we need to do to get them back on-line.
-  #- osx
+  - osx
   # TODO(dantup): Skip on windows until we understand/fix Flutter crashing
   # with "failed to delete build/assets: file is locked by another process".
   #- windows
 
 matrix:
   fast_finish: true
-    
+
   # Allow windows bots to fail until we can make the windows tests less flaky.
   # https://github.com/flutter/devtools/issues/963
   allow_failures:
     - os: windows
-    - os: osx
+    # - os: osx
     - env: BOT=main CHANNEL=master
     - env: BOT=main CHANNEL=beta
     - env: BOT=main CHANNEL=stable
