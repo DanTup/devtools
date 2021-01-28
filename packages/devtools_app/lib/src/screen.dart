@@ -222,7 +222,6 @@ class TabBadgePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    print(size.width);
     final paint = Paint()
       ..color = devtoolsError
       ..style = PaintingStyle.fill;
