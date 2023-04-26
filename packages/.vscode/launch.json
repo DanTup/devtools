@@ -67,5 +67,15 @@
             "type": "dart",
             "request": "attach",
         },
+        {
+            "name": "Sidebar",
+            "type": "dart",
+            "request": "launch",
+            "program": "lib/sidebar.dart",
+            "cwd": "devtools_app",
+            "toolArgs": [
+                "--web-port=8989",
+            ]
+        },
     ]
 }
