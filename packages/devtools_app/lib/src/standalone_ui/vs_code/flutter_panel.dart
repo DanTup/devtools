@@ -90,7 +90,6 @@ class _VsCodeConnectedPanelState extends State<_VsCodeConnectedPanel> {
           final devices = devicesSnapshot.data?.devices ?? const [];
           final unsupportedDevices =
               devicesSnapshot.data?.unsupportedDevices ?? const [];
-          final deviceMap = {for (final device in devices) device.id: device};
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -100,9 +99,8 @@ class _VsCodeConnectedPanelState extends State<_VsCodeConnectedPanel> {
                   final sessions =
                       debugSessionsSnapshot.data?.sessions ?? const [];
                   return DebugSessions(
-                    api: widget.api,
-                    sessions: sessions,
-                    deviceMap: deviceMap,
+                    widget.api,
+                    sessions,
                   );
                 },
               ),

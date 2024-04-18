@@ -17,20 +17,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 
-import '../../test_infra/test_data/dart_tooling_api/mock_api.dart';
-
 void main() {
   const windowSize = Size(2000.0, 2000.0);
 
   late MockVsCodeApi mockVsCodeApi;
-  late final Map<String, VsCodeDevice> deviceMap;
 
   setUpAll(() {
     // Set test mode so that the debug list of extensions will be used.
     setTestMode();
-
-    final devices = stubbedDevices.map((d) => MapEntry(d.id, d));
-    deviceMap = {for (final d in devices) d.key: d.value};
   });
 
   setUp(() {
@@ -53,9 +47,8 @@ void main() {
     await tester.pumpWidget(
       wrap(
         DebugSessions(
-          api: mockVsCodeApi,
-          sessions: _debugSessions,
-          deviceMap: deviceMap,
+          mockVsCodeApi,
+          _debugSessions,
         ),
       ),
     );
