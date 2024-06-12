@@ -2,6 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+const editorServiceName = 'editor';
+const editorStreamName = 'editor';
+
+enum EditorMethod {
+  // Device.
+  getDevices,
+  getDebugSessions,
+  selectDevice,
+  enablePlatformType,
+
+  // Debug Session.
+  hotReload,
+  hotRestart,
+  openDevToolsPage,
+}
+
 /// Known kinds of events that may come from the editor.
 ///
 /// This list is not guaranteed to match actual events from any given editor as

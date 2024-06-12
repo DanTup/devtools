@@ -7,6 +7,8 @@ import 'dart:async';
 import 'package:devtools_app/src/service/editor/api_classes.dart';
 import 'package:devtools_app/src/service/editor/editor_server.dart';
 
+class FakeDtdEditor = DtdEditorServer with FakeEditor;
+
 /// An mixin for [EditorServer]s that provides some useful mock editor
 /// functionality to allow working on the sidebar with a Stager app without
 /// needing to be connected to a real editor.
@@ -22,8 +24,6 @@ mixin FakeEditor on EditorServer {
 
   /// The current device simulated as selected.
   String? selectedDeviceId;
-
-  Stream<String> get log;
 
   /// Simulates devices being connected in the IDE by notifying the embedded
   /// panel about a set of test devices.

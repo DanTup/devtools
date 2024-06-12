@@ -20,6 +20,7 @@ enum StandaloneScreenType {
     return switch (this) {
       StandaloneScreenType.vsCodeFlutterPanel =>
         VsCodePostMessageSidebarPanel(PostMessageToolApiImpl.postMessage()),
+      // TODO(dantup): Add a new "editorSidebar" for the DTD version.
     };
   }
 }

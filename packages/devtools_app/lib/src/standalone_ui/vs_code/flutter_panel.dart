@@ -6,6 +6,7 @@ import 'dart:async';
 
 import 'package:devtools_app_shared/ui.dart';
 import 'package:devtools_app_shared/utils.dart';
+import 'package:dtd/dtd.dart';
 import 'package:flutter/material.dart';
 
 import '../../service/editor/api_classes.dart';
@@ -19,7 +20,58 @@ import 'debug_sessions.dart';
 import 'devices.dart';
 import 'devtools.dart';
 
-/// A general Flutter sidebar panel for embedding inside IDEs.
+/// A general Flutter sidebar panel for embedding inside editors.
+///
+/// Provides some basic functionality to improve discoverability of features
+/// such as creation of new projects, device selection and DevTools features.
+class EditorSidebarPanel extends StatefulWidget {
+  const EditorSidebarPanel(
+    this.dtd, {
+    super.key,
+  });
+
+  final DartToolingDaemon dtd;
+
+  @override
+  State<EditorSidebarPanel> createState() => _VsCodeFlutterPanelState();
+}
+
+class _VsCodeFlutterPanelState extends State<EditorSidebarPanel> {
+  _VsCodeFlutterPanelState();
+
+  Future<EditorClient>? _editor;
+
+  @override
+  void initState() {
+    super.initState();
+    ga.screen(gac.VsCodeFlutterSidebar.id);
+
+    final editor = EditorClient(widget.dtd);
+    unawaited(_editor = editor.initialized.then((_) => editor));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        FutureBuilder(
+          future: _editor,
+          builder: (context, snapshot) =>
+              switch ((snapshot.connectionState, snapshot.data)) {
+            (ConnectionState.done, final editor?) =>
+              _VsCodeConnectedPanel(editor),
+            (ConnectionState.done, null) =>
+              const Text('Editor is not available'),
+            _ => const CenteredCircularProgressIndicator(),
+          },
+        ),
+      ],
+    );
+  }
+}
+
+/// A general Flutter sidebar panel for embedding inside postMessage-based
+/// editors.
 ///
 /// Provides some basic functionality to improve discoverability of features
 /// such as creation of new projects, device selection and DevTools features.
