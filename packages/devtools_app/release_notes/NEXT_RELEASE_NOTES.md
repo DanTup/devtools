@@ -25,6 +25,8 @@ show. - [#8277](https://github.com/flutter/devtools/pull/8277)
 * Added support for loading extensions in pub workspaces
   [8347](https://github.com/flutter/devtools/pull/8347).
 
+* Added handling for IDE theme change events to update embedded DevTools UI.
+
 ## Inspector updates
 
 - Added a setting to the Flutter Inspector controls that allows users to opt-in to the newly redesigned Flutter Inspector. - [#8342](https://github.com/flutter/devtools/pull/8342)
