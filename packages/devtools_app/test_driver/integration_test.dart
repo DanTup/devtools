@@ -4,6 +4,7 @@
 
 // ignore_for_file: avoid_print
 
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -11,6 +12,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter_driver/flutter_driver.dart';
 import 'package:image/image.dart';
 import 'package:integration_test/integration_test_driver_extended.dart';
+import 'package:path/path.dart' as path;
 
 const _goldensDirectoryPath = 'integration_test/test_infra/goldens';
 const _failuresDirectoryPath = '$_goldensDirectoryPath/failures';
@@ -18,7 +20,36 @@ const _defaultDiffPercentage = 1.0;
 const _defaultDiffTolerance = 0.003;
 
 Future<void> main() async {
+  print('this is inside the driver script!');
   final driver = await FlutterDriver.connect();
+
+  // Write an autolaunch file for Dart-Code to auto-attach.
+  final autoLaunchFilePath = path.normalize(
+    File('../../.dart_code/autolaunch.json').absolute.path,
+  );
+  print('Writing attach config to $autoLaunchFilePath');
+  Directory(path.dirname(autoLaunchFilePath)).createSync(recursive: true);
+  try {
+    File(autoLaunchFilePath).deleteSync();
+    await Future.delayed(const Duration(milliseconds: 100));
+  } catch (_) {
+    // Do nothing, file didn't exist.
+  }
+  File(autoLaunchFilePath).writeAsStringSync(
+    jsonEncode({
+      'configurations': [
+        {
+          'request': 'attach',
+          'type': 'dart',
+          'name': 'integration test attach',
+          'vmServiceUri':
+              Platform.environment['VM_SERVICE_URL_REAL'] ??
+              Platform.environment['VM_SERVICE_URL'],
+        },
+      ],
+    }),
+  );
+
   await integrationDriver(
     driver: driver,
     onScreenshot:

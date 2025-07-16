@@ -17,6 +17,7 @@ import 'package:integration_test/integration_test.dart';
 // dart run integration_test/run_tests.dart --target=integration_test/test/live_connection/network_screen_test.dart --test-app-device=cli
 
 void main() {
+  print('this is inside the test!');
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   late TestApp testApp;
