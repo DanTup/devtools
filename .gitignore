@@ -23,7 +23,6 @@ flutter_export_environment.sh
 Podfile
 Podfile.lock
 **/generated/not_namespaced_r_class_sources/
-**/devtools_app/build/
 **/devtools_app_shared/build/
 **/devtools_extensions/build/
 **/devtools_shared/build/

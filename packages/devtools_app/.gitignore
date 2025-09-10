@@ -1,5 +1,6 @@
 # Output directory of webdev build
-build/
+build/*
+!build/web
 
 # Directory created by dartdoc
 doc/api/
