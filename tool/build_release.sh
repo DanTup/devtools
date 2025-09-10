@@ -80,9 +80,8 @@ flutter build web \
   --source-maps \
   --wasm \
   --pwa-strategy=offline-first \
-  --release \
   --no-tree-shake-icons \
-  --no-minify-wasm
+  --no-minify-wasm --no-strip-wasm -O 0 --debug
 
 # Ensure permissions are set correctly on canvaskit binaries.
 chmod 0755 build/web/canvaskit/canvaskit.*
